@@ -1,0 +1,145 @@
+<div class="min-h-screen bg-bg">
+  <!-- Navbar -->
+  <nav class="p-16 fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-bg/80 backdrop-blur-md border-b border-border/50">
+    <a routerLink="/" class="text-2xl font-extrabold tracking-tight">
+      <span class="text-primary">Read</span><span class="text-text">Now</span>
+    </a>
+    <div class="flex items-center gap-4">
+      <a routerLink="/login" class="text-text-secondary hover:text-text transition-colors text-sm font-medium">
+        Iniciar sesión
+      </a>
+      <a routerLink="/registro" class="btn-app bg-primary hover:bg-primary-hover px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-lg hover:shadow-primary/25">
+        Registrarse
+      </a>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="relative flex items-center justify-center min-h-screen overflow-hidden">
+    <!-- Background gradients -->
+    <div class="absolute inset-0 bg-gradient-to-br from-bg via-surface to-bg"></div>
+    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-secondary/10 rounded-full blur-3xl"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl"></div>
+
+    <div class="relative z-10 text-center px-6 max-w-4xl mx-auto pt-20">
+      <div class="inline-flex items-center gap-2 bg-surface/80 border border-border rounded-full px-4 py-2 mb-8">
+        <span class="w-2 h-2 bg-success rounded-full animate-pulse"></span>
+        <span class="text-text-secondary text-sm">Más de 10,000 recursos disponibles</span>
+      </div>
+
+      <h1 class="text-5xl md:text-7xl font-extrabold leading-tight mb-6">
+        <span class="text-text">Descubre un mundo de</span><br>
+        <span class="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+          conocimiento ilimitado
+        </span>
+      </h1>
+
+      <p class="text-text-secondary text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
+        Libros, tesis, revistas y más. Regístrate y obtén tu prueba gratuita de 15 días.
+      </p>
+
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
+        <a routerLink="/registro" class="btn-app bg-primary hover:bg-primary-hover px-8 py-4 rounded-xl text-lg font-bold transition-all duration-300 hover:shadow-xl hover:shadow-primary/30 hover:scale-105 inline-flex items-center justify-center gap-2 shrink-0">
+          <span>Comenzar prueba gratuita</span>
+          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+          </svg>
+        </a>
+      </div>
+
+      <p class="text-text-secondary text-sm">
+        ¿Ya tienes cuenta?
+        <a routerLink="/login" class="text-primary hover:text-primary-hover font-medium transition-colors">
+          Inicia sesión
+        </a>
+      </p>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="relative py-20 px-4 sm:px-6">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold text-text mb-3">Todo lo que necesitas para aprender</h2>
+        <p class="text-text-secondary text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
+          Una plataforma completa diseñada para potenciar tu experiencia de lectura y aprendizaje.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
+        <!-- Feature 1 -->
+        <div class="group bg-surface border border-border rounded-2xl p-6 hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/5">
+          <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+            </svg>
+          </div>
+          <h3 class="text-text font-semibold text-lg mb-2">Miles de recursos</h3>
+          <p class="text-text-secondary text-sm leading-relaxed">
+            Accede a una extensa colección de libros, tesis, artículos y revistas académicas.
+          </p>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="group bg-surface border border-border rounded-2xl p-6 hover:border-secondary/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-secondary/5">
+          <div class="w-12 h-12 bg-secondary/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-secondary/20 transition-colors">
+            <svg class="w-6 h-6 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+          </div>
+          <h3 class="text-text font-semibold text-lg mb-2">Lee donde quieras</h3>
+          <p class="text-text-secondary text-sm leading-relaxed">
+            Disfruta de tu contenido favorito desde cualquier dispositivo, en cualquier momento.
+          </p>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="group bg-surface border border-border rounded-2xl p-6 hover:border-accent/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-accent/5">
+          <div class="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-accent/20 transition-colors">
+            <svg class="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+            </svg>
+          </div>
+          <h3 class="text-text font-semibold text-lg mb-2">Califica y reseña</h3>
+          <p class="text-text-secondary text-sm leading-relaxed">
+            Comparte tu opinión y descubre los recursos mejor valorados por la comunidad.
+          </p>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="group bg-surface border border-border rounded-2xl p-6 hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/5">
+          <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+            </svg>
+          </div>
+          <h3 class="text-text font-semibold text-lg mb-2">Guarda tus favoritos</h3>
+          <p class="text-text-secondary text-sm leading-relaxed">
+            Crea tu biblioteca personal guardando los recursos que más te interesan.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer CTA -->
+  <section class="relative py-16 px-4 sm:px-6">
+    <div class="max-w-4xl mx-auto">
+      <div class="bg-surface border border-border rounded-2xl p-8 md:p-12 flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
+        <div class="flex-1">
+          <h2 class="text-2xl md:text-3xl font-bold text-text mb-2">¿Listo para empezar?</h2>
+          <p class="text-text-secondary text-sm md:text-base">
+            Únete a miles de lectores que ya disfrutan de ReadNow.
+          </p>
+        </div>
+        <a routerLink="/registro" class="btn-app shrink-0 inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover px-6 py-3.5 md:px-8 md:py-4 rounded-xl text-base md:text-lg font-bold transition-all duration-300 hover:shadow-xl hover:shadow-primary/30 hover:scale-105">
+          <span>Crear cuenta gratis</span>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+</div>
