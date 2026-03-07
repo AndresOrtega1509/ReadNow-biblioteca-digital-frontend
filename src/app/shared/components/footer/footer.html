@@ -1,0 +1,40 @@
+<footer class="bg-surface border-t border-border mt-auto">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-10">
+      <!-- Brand -->
+      <div class="text-center sm:text-left">
+        <a routerLink="/" class="inline-flex items-center gap-1 mb-3">
+          <span class="text-xl font-extrabold text-text">Read</span>
+          <span class="text-xl font-extrabold text-primary">Now</span>
+        </a>
+        <p class="text-sm text-text-secondary leading-relaxed max-w-xs mx-auto sm:mx-0">
+          Tu biblioteca digital. Accede a miles de recursos académicos desde cualquier lugar.
+        </p>
+      </div>
+
+      <!-- Links -->
+      <div class="text-center sm:text-left">
+        <h3 class="text-sm font-semibold text-text uppercase tracking-wider mb-4">Enlaces</h3>
+        <ul class="space-y-2">
+          <li><a routerLink="/sobre-nosotros" class="text-sm text-text-secondary hover:text-text transition-colors">Sobre nosotros</a></li>
+          <li><a routerLink="/contacto" class="text-sm text-text-secondary hover:text-text transition-colors">Contacto</a></li>
+          <li><a routerLink="/terminos" class="text-sm text-text-secondary hover:text-text transition-colors">Términos y condiciones</a></li>
+        </ul>
+      </div>
+
+      <!-- Comunidad -->
+      <div class="text-center sm:text-left">
+        <h3 class="text-sm font-semibold text-text uppercase tracking-wider mb-4">Comunidad</h3>
+        <ul class="space-y-2">
+          <li><a routerLink="/catalogo" class="text-sm text-text-secondary hover:text-text transition-colors">Explorar catálogo</a></li>
+          <li><a href="mailto:soporte@readnow.com" class="text-sm text-text-secondary hover:text-text transition-colors">soporte&#64;readnow.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="border-t border-border mt-8 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+      <p class="text-xs text-text-secondary">&copy; {{ currentYear }} ReadNow. Todos los derechos reservados.</p>
+      <p class="text-xs text-text-secondary">Hecho con <span class="text-primary">&#9829;</span> para lectores</p>
+    </div>
+  </div>
+</footer>

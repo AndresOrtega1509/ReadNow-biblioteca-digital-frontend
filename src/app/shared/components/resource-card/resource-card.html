@@ -1,0 +1,61 @@
+<a [routerLink]="['/catalogo', resource().recursoId]"
+   class="group block w-full rounded-xl overflow-hidden bg-surface border border-border hover:border-primary/40 transition-all duration-300 hover:scale-[1.03] hover:shadow-xl hover:shadow-primary/5">
+
+  <!-- Cover / Thumbnail -->
+  <div class="relative aspect-[3/4] overflow-hidden"
+       [style.background]="getTypeGradient()">
+
+    @if (resource().urlPortada) {
+      <img [src]="resource().urlPortada" [alt]="resource().nombre"
+           class="absolute inset-0 w-full h-full object-cover" />
+    }
+    @if (!resource().urlPortada) {
+      <!-- Placeholder: first letter + book icon -->
+      <div class="absolute inset-0 flex flex-col items-center justify-center gap-3">
+        <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl font-bold text-white/90"
+             [style.background-color]="getTypeColor()">
+          {{ resource().nombre.charAt(0).toUpperCase() }}
+        </div>
+        <svg class="w-8 h-8 text-white/20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/>
+        </svg>
+      </div>
+    }
+
+    <!-- Hover overlay with description -->
+    <div class="absolute inset-0 bg-bg/85 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 flex flex-col justify-end">
+      <p class="text-xs text-text-secondary line-clamp-4 leading-relaxed">
+        {{ resource().descripcion || 'Sin descripción disponible.' }}
+      </p>
+    </div>
+
+    <!-- Type badge -->
+    <div class="absolute top-2 right-2 px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider text-white/90"
+         [style.background-color]="getTypeColor()">
+      {{ resource().tipoRecurso }}
+    </div>
+  </div>
+
+  <!-- Info -->
+  <div class="p-3 space-y-1.5">
+    <h3 class="text-sm font-semibold text-text line-clamp-1 group-hover:text-primary transition-colors duration-200">
+      {{ resource().nombre }}
+    </h3>
+    <p class="text-xs text-text-secondary line-clamp-1">
+      {{ resource().autor }}
+    </p>
+
+    <!-- Rating -->
+    <div class="flex items-center gap-1 pt-0.5">
+      @for (star of getStars(); track $index) {
+        <svg class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor"
+             [class]="star === 1 ? 'text-accent' : 'text-border'">
+          <path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clip-rule="evenodd"/>
+        </svg>
+      }
+      <span class="text-[10px] text-text-secondary ml-1">
+        ({{ resource().totalCalificaciones }})
+      </span>
+    </div>
+  </div>
+</a>
