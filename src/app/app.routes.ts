@@ -9,6 +9,7 @@ export const routes: Routes = [
     { path: 'recuperar-password', loadComponent: () => import('./pages/recuperar-password/recuperar-password').then(m => m.RecuperarPassword) },
     { path: 'restablecer-password', loadComponent: () => import('./pages/restablecer-password/restablecer-password').then(m => m.RestablecerPassword) },
     { path: 'catalogo', loadComponent: () => import('./pages/catalogo/catalogo').then(m => m.Catalogo), canActivate: [authGuard] },
+    { path: 'catalogo/:id', loadComponent: () => import('./pages/recurso-detalle/recurso-detalle').then(m => m.RecursoDetalle), canActivate: [authGuard] },
 
     { path: '**', redirectTo: '' },
 ];
