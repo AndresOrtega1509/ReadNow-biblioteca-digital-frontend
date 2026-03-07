@@ -14,6 +14,7 @@ import { FavoritoService } from '../../core/service/favorito.service';
 import { HistorialService } from '../../core/service/historial.service';
 import { SessionService } from '../../core/service/session.service';
 import { AuthService } from '../../core/service/auth.service';
+import { AccessibilityService } from '../../core/service/accessibility.service';
 import {
   RecursoResponse,
   ReseniaResponse,
@@ -52,7 +53,8 @@ export class RecursoDetalle implements OnInit, OnDestroy {
     private historialService: HistorialService,
     private sessionService: SessionService,
     protected authService: AuthService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    protected a11y: AccessibilityService
   ) {}
 
   ngOnInit(): void {
@@ -62,6 +64,7 @@ export class RecursoDetalle implements OnInit, OnDestroy {
       this.cargarRecurso();
       this.cargarResenias();
       this.cargarPromedio();
+      this.cargarMiCalificacion();
     });
   }
 
@@ -105,12 +108,19 @@ export class RecursoDetalle implements OnInit, OnDestroy {
     });
   }
 
+  cargarMiCalificacion(): void {
+    this.calificacionService.obtenerMiCalificacion(this.recursoId).subscribe({
+      next: (valor) => this.userRating.set(valor),
+      error: () => this.userRating.set(0),
+    });
+  }
+
   calificar(valor: number): void {
-    this.userRating.set(valor);
     const req: CalificacionRequest = { recursoId: this.recursoId, valor };
     this.calificacionService.calificar(req).subscribe({
       next: () => {
-        this.mostrarMensaje('Calificación registrada', 'success');
+        this.userRating.set(valor);
+        this.mostrarMensaje('Calificación guardada', 'success');
         this.cargarPromedio();
       },
       error: () => this.mostrarMensaje('Error al calificar', 'error'),
@@ -159,9 +169,18 @@ export class RecursoDetalle implements OnInit, OnDestroy {
   leerRecurso(): void {
     const url = this.recurso()?.urlArchivo;
     if (!url) return;
-    this.historialService.registrarLectura(this.recursoId).subscribe();
-    this.readingMode.set(true);
-    this.sessionService.setReadingMode(true);
+    this.historialService.registrarLectura(this.recursoId).subscribe({
+      next: () => {
+        this.readingMode.set(true);
+        this.sessionService.setReadingMode(true);
+      },
+      error: (err) => {
+        const msg = err.status === 403
+          ? (err.error?.mensaje || 'Tu suscripción ha vencido. Renueva para leer recursos.')
+          : 'Error al abrir el recurso';
+        this.mostrarMensaje(msg, 'error');
+      },
+    });
   }
 
   cerrarVisorPdf(): void {
@@ -173,7 +192,7 @@ export class RecursoDetalle implements OnInit, OnDestroy {
   get pdfViewerUrl(): SafeResourceUrl | null {
     const url = this.recurso()?.urlArchivo;
     if (!url) return null;
-    return this.sanitizer.bypassSecurityTrustResourceUrl(url + '#toolbar=0');
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url + this.a11y.getPdfUrlHash());
   }
 
   getTypeColor(): string {

@@ -30,6 +30,7 @@
         </div>
       }
 
+      @if (!success()) {
       <form (ngSubmit)="onSubmit()" #registroForm="ngForm">
         <!-- Nombre & Apellido row -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
@@ -84,9 +85,18 @@
               name="telefono"
               [(ngModel)]="telefono"
               required
-              placeholder="+57 300 123 4567"
+              minlength="10"
+              maxlength="10"
+              pattern="[0-9]{10}"
+              placeholder="3001234567"
               class="w-full bg-surface-light border border-border text-text rounded-lg px-4 py-3 text-sm placeholder-text-secondary/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+              #telefonoInput="ngModel"
             />
+            @if (telefonoInput.invalid && telefonoInput.touched && telefonoInput.errors) {
+              @if (telefonoInput.errors['pattern'] || telefonoInput.errors['minlength'] || telefonoInput.errors['maxlength']) {
+                <p class="text-danger text-xs mt-1.5">El teléfono debe tener exactamente 10 dígitos numéricos.</p>
+              }
+            }
           </div>
           <div>
             <label for="username" class="block text-text-secondary text-sm mb-1.5">Usuario</label>
@@ -153,6 +163,7 @@
           }
         </button>
       </form>
+      }
     </div>
 
     <!-- Login link -->

@@ -4,7 +4,9 @@ import { DecimalPipe } from '@angular/common';
 import { Navbar } from '../../shared/components/navbar/navbar';
 import { SessionTimeoutModal } from '../../shared/components/session-timeout-modal/session-timeout-modal';
 import { RecursoService } from '../../core/service/recurso.service';
-import { RecursoResponse, RecursoRequest } from '../../core/models/interfaces';
+import { CategoriaService } from '../../core/service/categoria.service';
+import { TipoRecursoService } from '../../core/service/tipo-recurso.service';
+import { RecursoResponse, RecursoRequest, CategoriaRecursoResponse, TipoRecursoResponse } from '../../core/models/interfaces';
 
 @Component({
   selector: 'app-admin-recursos',
@@ -23,22 +25,15 @@ export class AdminRecursos implements OnInit {
 
   form: RecursoRequest = {
     nombre: '', autor: '', descripcion: '', idioma: 'Español',
-    fechaPublicacion: '', tipoRecursoId: 1, categoriaRecursoId: null, urlPortada: '',
+    fechaPublicacion: '', tipoRecursoId: 1, categoriaRecursoId: null,
   };
   selectedFile: File | null = null;
   selectedFileName = signal('');
+  selectedPortadaFile: File | null = null;
+  selectedPortadaFileName = signal('');
 
-  tipos = [
-    { id: 1, nombre: 'Libro' }, { id: 2, nombre: 'Tesis' }, { id: 3, nombre: 'Revista' },
-    { id: 4, nombre: 'Artículo' }, { id: 5, nombre: 'Manual' },
-  ];
-
-  categorias = [
-    { id: 1, nombre: 'Ciencia Ficción' }, { id: 2, nombre: 'Historia' }, { id: 3, nombre: 'Tecnología' },
-    { id: 4, nombre: 'Matemáticas' }, { id: 5, nombre: 'Literatura' }, { id: 6, nombre: 'Filosofía' },
-    { id: 7, nombre: 'Medicina' }, { id: 8, nombre: 'Derecho' }, { id: 9, nombre: 'Ingeniería' },
-    { id: 10, nombre: 'Arte' },
-  ];
+  tipos = signal<TipoRecursoResponse[]>([]);
+  categorias = signal<CategoriaRecursoResponse[]>([]);
 
   recursosFiltrados = computed(() => {
     const q = this.searchQuery().toLowerCase().trim();
@@ -52,10 +47,20 @@ export class AdminRecursos implements OnInit {
     );
   });
 
-  constructor(private recursoService: RecursoService) {}
+  constructor(
+    private recursoService: RecursoService,
+    private categoriaService: CategoriaService,
+    private tipoRecursoService: TipoRecursoService,
+  ) {}
 
   ngOnInit(): void {
     this.cargarRecursos();
+    this.categoriaService.listar().subscribe({
+      next: (data) => this.categorias.set(data),
+    });
+    this.tipoRecursoService.listar().subscribe({
+      next: (data) => this.tipos.set(data),
+    });
   }
 
   cargarRecursos(): void {
@@ -75,19 +80,20 @@ export class AdminRecursos implements OnInit {
         descripcion: recurso.descripcion,
         idioma: recurso.idioma,
         fechaPublicacion: recurso.fechaPublicacion,
-        tipoRecursoId: this.tipos.find(t => t.nombre === recurso.tipoRecurso)?.id || 1,
-        categoriaRecursoId: this.categorias.find(c => c.nombre === recurso.categoriaRecurso)?.id || null,
-        urlPortada: recurso.urlPortada || '',
+        tipoRecursoId: this.tipos().find(t => t.nombre === recurso.tipoRecurso)?.tipoRecursoId ?? this.tipos()[0]?.tipoRecursoId ?? 1,
+        categoriaRecursoId: this.categorias().find(c => c.nombre === recurso.categoriaRecurso)?.categoriaRecursoId ?? null,
       };
     } else {
       this.editingId.set(null);
       this.form = {
         nombre: '', autor: '', descripcion: '', idioma: 'Español',
-        fechaPublicacion: '', tipoRecursoId: 1, categoriaRecursoId: null, urlPortada: '',
+        fechaPublicacion: '', tipoRecursoId: this.tipos()[0]?.tipoRecursoId ?? 1, categoriaRecursoId: null,
       };
     }
     this.selectedFile = null;
     this.selectedFileName.set('');
+    this.selectedPortadaFile = null;
+    this.selectedPortadaFileName.set('');
     this.error.set('');
     this.showForm.set(true);
   }
@@ -99,9 +105,17 @@ export class AdminRecursos implements OnInit {
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
+    if (input.files?.length) {
       this.selectedFile = input.files[0];
       this.selectedFileName.set(this.selectedFile.name);
+    }
+  }
+
+  onPortadaFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files?.length) {
+      this.selectedPortadaFile = input.files[0];
+      this.selectedPortadaFileName.set(this.selectedPortadaFile.name);
     }
   }
 
@@ -110,7 +124,12 @@ export class AdminRecursos implements OnInit {
     this.error.set('');
 
     if (this.editingId()) {
-      this.recursoService.actualizarRecurso(this.editingId()!, this.form).subscribe({
+      this.recursoService.actualizarRecurso(
+        this.editingId()!,
+        this.form,
+        this.selectedFile,
+        this.selectedPortadaFile
+      ).subscribe({
         next: () => {
           this.mensaje.set('Recurso actualizado exitosamente');
           this.cargarRecursos();
@@ -121,7 +140,7 @@ export class AdminRecursos implements OnInit {
         error: (err) => { this.error.set(err.error?.mensaje || 'Error al actualizar'); this.saving.set(false); },
       });
     } else {
-      this.recursoService.crearRecurso(this.form, this.selectedFile).subscribe({
+      this.recursoService.crearRecurso(this.form, this.selectedFile, this.selectedPortadaFile).subscribe({
         next: () => {
           this.mensaje.set('Recurso creado exitosamente');
           this.cargarRecursos();

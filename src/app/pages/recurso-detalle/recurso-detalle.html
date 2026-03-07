@@ -15,6 +15,7 @@
         </button>
       </div>
       <iframe [src]="pdfViewerUrl" title="PDF del recurso"
+              [style.filter]="a11y.pdfFilter"
               class="flex-1 w-full min-h-0 border-0"></iframe>
     </div>
   }

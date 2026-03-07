@@ -108,7 +108,7 @@
                     <div class="flex items-center justify-end gap-2">
                       <button
                         (click)="abrirFormulario(recurso)"
-                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-secondary/10 text-secondary hover:bg-secondary/20 transition-colors duration-200 cursor-pointer">
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-text-secondary hover:bg-surface-light hover:text-text transition-colors duration-200 cursor-pointer">
                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                           <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/>
                         </svg>
@@ -241,7 +241,7 @@
               class="w-full px-4 py-2.5 bg-bg border border-border rounded-xl text-text text-sm placeholder-text-secondary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200" />
           </div>
           <div>
-            <label class="block text-sm font-medium text-text-secondary mb-1.5">Fecha de Publicación</label>
+            <label class="block text-sm font-medium text-text-secondary mb-1.5">Fecha de publicación de la obra</label>
             <input
               type="date"
               [(ngModel)]="form.fechaPublicacion"
@@ -249,14 +249,31 @@
           </div>
         </div>
 
-        <!-- URL Portada (opcional) -->
+        <!-- Portada: subir imagen -->
         <div>
-          <label class="block text-sm font-medium text-text-secondary mb-1.5">URL de la portada (opcional)</label>
-          <input
-            type="url"
-            [(ngModel)]="form.urlPortada"
-            placeholder="https://... (imagen de la portada del libro)"
-            class="w-full px-4 py-2.5 bg-bg border border-border rounded-xl text-text text-sm placeholder-text-secondary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200" />
+          <label class="block text-sm font-medium text-text-secondary mb-1.5">Portada del libro</label>
+          <label class="group flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-border rounded-xl bg-bg hover:border-primary/50 hover:bg-primary/5 transition-all duration-200 cursor-pointer">
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              (change)="onPortadaFileSelected($event)"
+              class="hidden" />
+            @if (selectedPortadaFileName()) {
+              <svg class="w-8 h-8 text-success mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <p class="text-sm text-text font-medium">{{ selectedPortadaFileName() }}</p>
+              <p class="text-xs text-text-secondary mt-0.5">Click para cambiar imagen</p>
+            } @else {
+              <svg class="w-8 h-8 text-text-secondary/40 group-hover:text-primary/60 mb-1 transition-colors duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/>
+              </svg>
+              <p class="text-sm text-text-secondary group-hover:text-text transition-colors duration-200">
+                {{ editingId() ? 'Click para cambiar imagen de portada (opcional)' : 'Click para seleccionar imagen de portada (opcional)' }}
+              </p>
+              <p class="text-xs text-text-secondary/60 mt-0.5">JPG, PNG, WebP o GIF</p>
+            }
+          </label>
         </div>
 
         <!-- Row: Tipo + Categoría -->
@@ -266,8 +283,8 @@
             <select
               [(ngModel)]="form.tipoRecursoId"
               class="w-full px-4 py-2.5 bg-bg border border-border rounded-xl text-text text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 cursor-pointer">
-              @for (tipo of tipos; track tipo.id) {
-                <option [ngValue]="tipo.id">{{ tipo.nombre }}</option>
+              @for (tipo of tipos(); track tipo.tipoRecursoId) {
+                <option [ngValue]="tipo.tipoRecursoId">{{ tipo.nombre }}</option>
               }
             </select>
           </div>
@@ -277,41 +294,41 @@
               [(ngModel)]="form.categoriaRecursoId"
               class="w-full px-4 py-2.5 bg-bg border border-border rounded-xl text-text text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 cursor-pointer">
               <option [ngValue]="null">Sin categoría</option>
-              @for (cat of categorias; track cat.id) {
-                <option [ngValue]="cat.id">{{ cat.nombre }}</option>
+              @for (cat of categorias(); track cat.categoriaRecursoId) {
+                <option [ngValue]="cat.categoriaRecursoId">{{ cat.nombre }}</option>
               }
             </select>
           </div>
         </div>
 
-        <!-- File Upload -->
-        @if (!editingId()) {
-          <div>
-            <label class="block text-sm font-medium text-text-secondary mb-1.5">Archivo PDF *</label>
-            <label class="group flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-border rounded-xl bg-bg hover:border-primary/50 hover:bg-primary/5 transition-all duration-200 cursor-pointer">
-              <input
-                type="file"
-                accept=".pdf"
-                (change)="onFileSelected($event)"
-                class="hidden" />
-              @if (selectedFileName()) {
-                <svg class="w-10 h-10 text-success mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                <p class="text-sm text-text font-medium">{{ selectedFileName() }}</p>
-                <p class="text-xs text-text-secondary mt-1">Click para cambiar archivo</p>
-              } @else {
-                <svg class="w-10 h-10 text-text-secondary/40 group-hover:text-primary/60 mb-2 transition-colors duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z"/>
-                </svg>
-                <p class="text-sm text-text-secondary group-hover:text-text transition-colors duration-200">
-                  Click para seleccionar un archivo PDF
-                </p>
-                <p class="text-xs text-text-secondary/60 mt-1">Solo archivos .pdf</p>
-              }
-            </label>
-          </div>
-        }
+        <!-- PDF: obligatorio al crear, opcional al editar -->
+        <div>
+          <label class="block text-sm font-medium text-text-secondary mb-1.5">
+            Archivo PDF {{ editingId() ? '(opcional: subir solo si quieres reemplazar el actual)' : '*' }}
+          </label>
+          <label class="group flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-border rounded-xl bg-bg hover:border-primary/50 hover:bg-primary/5 transition-all duration-200 cursor-pointer">
+            <input
+              type="file"
+              accept=".pdf"
+              (change)="onFileSelected($event)"
+              class="hidden" />
+            @if (selectedFileName()) {
+              <svg class="w-10 h-10 text-success mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <p class="text-sm text-text font-medium">{{ selectedFileName() }}</p>
+              <p class="text-xs text-text-secondary mt-1">Click para cambiar archivo</p>
+            } @else {
+              <svg class="w-10 h-10 text-text-secondary/40 group-hover:text-primary/60 mb-2 transition-colors duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z"/>
+              </svg>
+              <p class="text-sm text-text-secondary group-hover:text-text transition-colors duration-200">
+                {{ editingId() ? 'Click para seleccionar nuevo PDF (opcional)' : 'Click para seleccionar un archivo PDF' }}
+              </p>
+              <p class="text-xs text-text-secondary/60 mt-1">Solo archivos .pdf</p>
+            }
+          </label>
+        </div>
       </div>
 
       <!-- Modal Footer -->
@@ -323,7 +340,7 @@
         </button>
         <button
           (click)="guardar()"
-          [disabled]="saving()"
+          [disabled]="saving() || (!editingId() && !selectedFile)"
           class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-text bg-primary hover:bg-primary-hover rounded-xl transition-all duration-200 shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
           @if (saving()) {
             <div class="w-4 h-4 border-2 border-text/30 border-t-text rounded-full animate-spin"></div>
