@@ -117,7 +117,77 @@
             </div>
           </div>
         </div>
+
+        <!-- Suscripciones Activas -->
+        <div class="relative overflow-hidden bg-surface border border-border rounded-2xl p-6 group hover:border-success/30 transition-all duration-300">
+          <div class="absolute top-0 right-0 w-32 h-32 bg-success/5 rounded-full -translate-y-8 translate-x-8 group-hover:bg-success/10 transition-colors duration-300"></div>
+          <div class="relative flex items-start justify-between">
+            <div>
+              <p class="text-sm font-medium text-text-secondary mb-1">Suscripciones Activas</p>
+              <p class="text-4xl font-bold text-text tracking-tight">{{ stats()!.suscripcionesActivas }}</p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-success/10 flex items-center justify-center shrink-0">
+              <svg class="w-6 h-6 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Suscripciones Vencidas -->
+        <div class="relative overflow-hidden bg-surface border border-border rounded-2xl p-6 group hover:border-warning/30 transition-all duration-300">
+          <div class="absolute top-0 right-0 w-32 h-32 bg-warning/5 rounded-full -translate-y-8 translate-x-8 group-hover:bg-warning/10 transition-colors duration-300"></div>
+          <div class="relative flex items-start justify-between">
+            <div>
+              <p class="text-sm font-medium text-text-secondary mb-1">Suscripciones Vencidas</p>
+              <p class="text-4xl font-bold text-text tracking-tight">{{ stats()!.suscripcionesVencidas }}</p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-warning/10 flex items-center justify-center shrink-0">
+              <svg class="w-6 h-6 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L12.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+              </svg>
+            </div>
+          </div>
+        </div>
       </div>
+
+      <!-- Suscripciones por Plan -->
+      @if (stats()!.suscripcionesPorPlan.length) {
+        <div class="bg-surface border border-border rounded-2xl p-6 mb-10">
+          <h2 class="text-xl font-bold text-text mb-6 flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center">
+              <svg class="w-4 h-4 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/>
+              </svg>
+            </div>
+            Suscripciones por Plan
+          </h2>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-border">
+                  <th class="text-left py-3 px-4 font-semibold text-text">Plan</th>
+                  <th class="text-right py-3 px-4 font-semibold text-text">Activas</th>
+                  <th class="text-right py-3 px-4 font-semibold text-text">Vencidas</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (plan of stats()!.suscripcionesPorPlan; track plan.nombrePlan) {
+                  <tr class="border-b border-border/50 hover:bg-surface-light/30 transition-colors">
+                    <td class="py-3 px-4 text-text">{{ plan.nombrePlan }}</td>
+                    <td class="py-3 px-4 text-right">
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg bg-success/15 text-success font-medium">{{ plan.activas }}</span>
+                    </td>
+                    <td class="py-3 px-4 text-right">
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg bg-warning/15 text-warning font-medium">{{ plan.vencidas }}</span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
 
       <!-- Recursos por Tipo (Bar Chart) -->
       @if (stats()!.recursosPorTipo.length) {
@@ -138,7 +208,7 @@
                   <div
                     class="h-full rounded-xl flex items-center justify-end px-3 transition-all duration-700 ease-out"
                     [style.width]="getBarWidth(item.cantidad)"
-                    [style.background]="'linear-gradient(90deg, ' + getBarColor(i) + '33, ' + getBarColor(i) + ')'">
+                    [style.background]="'linear-gradient(90deg, ' + getBarColor(item.tipoRecurso) + '33, ' + getBarColor(item.tipoRecurso) + ')'">
                     <span class="text-xs font-bold text-text drop-shadow-sm">{{ item.cantidad }}</span>
                   </div>
                 </div>
@@ -174,7 +244,9 @@
                     <p class="text-sm font-medium text-text truncate">{{ recurso.nombre }}</p>
                     <p class="text-xs text-text-secondary">{{ recurso.autor }} · {{ recurso.tipoRecurso }}</p>
                   </div>
-                  <span class="text-xs px-2.5 py-1 rounded-lg bg-secondary/10 text-secondary font-medium shrink-0">
+                  <span class="text-xs px-2.5 py-1 rounded-lg font-medium shrink-0"
+                      [style.background-color]="colorCategoria + '26'"
+                      [style.color]="colorCategoria">
                     {{ recurso.categoriaRecurso }}
                   </span>
                 </div>

@@ -33,6 +33,7 @@ export class Login {
             email: res.email,
             rol: res.rol,
             nombre: res.nombre,
+            username: res.username ?? res.nombre ?? '',
             usuarioId: res.usuarioId,
             sesionConfig: res.sesionConfig,
           });

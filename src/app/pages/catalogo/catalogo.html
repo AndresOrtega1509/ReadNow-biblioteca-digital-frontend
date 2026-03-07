@@ -4,15 +4,22 @@
   <!-- Hero Banner -->
   @if (featuredResource(); as featured) {
     <section class="relative h-[70vh] min-h-[480px] overflow-hidden">
-      <!-- Gradient background -->
-      <div class="absolute inset-0 bg-gradient-to-br from-secondary/30 via-primary/20 to-bg"></div>
-      <div class="absolute inset-0 bg-gradient-to-t from-bg via-bg/60 to-transparent"></div>
+      <!-- Portada a pantalla completa (estilo Netflix): imagen de fondo + overlay para legibilidad -->
+      @if (getPortadaUrl(featured)) {
+        <div class="absolute inset-0">
+          <img [src]="getPortadaUrl(featured)" alt=""
+               class="absolute inset-0 w-full h-full object-cover object-center" />
+        </div>
+        <div class="absolute inset-0 bg-gradient-to-r from-bg via-bg/85 to-transparent"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-bg via-bg/20 to-transparent"></div>
+      } @else {
+        <div class="absolute inset-0 bg-gradient-to-br from-secondary/30 via-primary/20 to-bg"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-bg via-bg/60 to-transparent"></div>
+        <div class="absolute top-20 right-20 w-72 h-72 bg-primary/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-20 left-10 w-96 h-96 bg-secondary/10 rounded-full blur-3xl"></div>
+      }
 
-      <!-- Decorative shapes -->
-      <div class="absolute top-20 right-20 w-72 h-72 bg-primary/10 rounded-full blur-3xl"></div>
-      <div class="absolute bottom-20 left-10 w-96 h-96 bg-secondary/10 rounded-full blur-3xl"></div>
-
-      <div class="relative z-10 h-full max-w-7xl mx-auto px-6 flex items-center">
+      <div class="relative z-10 h-full max-w-7xl mx-auto px-6 sm:px-8 flex items-center">
         <div class="max-w-2xl space-y-6">
           <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 border border-primary/30 text-primary text-sm font-medium">
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -69,37 +76,17 @@
         [class.pt-8]="featuredResource()"
         [class.pt-28]="!featuredResource()">
 
-    <!-- Search bar -->
-    <div class="relative max-w-2xl mx-auto">
-      <div class="relative flex items-center">
-        <svg class="absolute left-4 w-5 h-5 text-text-secondary pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-        </svg>
-        <input
-          type="text"
-          [(ngModel)]="searchQuery"
-          (ngModelChange)="buscar()"
-          placeholder="Buscar libros, tesis, revistas, artículos..."
-          class="w-full pl-12 pr-12 py-4 rounded-2xl bg-surface border border-border text-text placeholder-text-secondary focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-all text-lg" />
-        @if (searchQuery) {
-          <button (click)="limpiarBusqueda()"
-                  class="absolute right-4 p-1 rounded-full hover:bg-surface-light transition-colors">
-            <svg class="w-5 h-5 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-          </button>
-        }
-      </div>
-    </div>
-
-    <!-- Search results -->
+    <!-- Resultados de búsqueda (el buscador está en la barra superior; al escribir se busca en tiempo real) -->
     @if (searching()) {
       <section class="space-y-6">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap items-center justify-between gap-3">
           <h2 class="text-2xl font-bold text-text">
             Resultados para "<span class="text-primary">{{ searchQuery }}</span>"
           </h2>
-          <span class="text-text-secondary text-sm">{{ resultadosBusqueda().length }} resultado(s)</span>
+          <div class="flex items-center gap-3">
+            <span class="text-text-secondary text-sm">{{ resultadosBusqueda().length }} resultado(s)</span>
+            <a routerLink="/catalogo" class="text-sm text-primary hover:text-primary-hover font-medium">Limpiar búsqueda</a>
+          </div>
         </div>
 
         @if (resultadosBusqueda().length > 0) {
@@ -126,9 +113,9 @@
       @if (mejorCalificados().length > 0) {
         <section class="space-y-4">
           <div class="flex items-center gap-3">
-            <div class="w-1 h-8 rounded-full bg-accent"></div>
+            <div class="w-1 h-8 rounded-full shrink-0" [style.background-color]="colorSeccionTop10"></div>
             <h2 class="text-2xl font-bold text-text">Top 10 Mejor Calificados</h2>
-            <svg class="w-6 h-6 text-accent" fill="currentColor" viewBox="0 0 20 20">
+            <svg class="w-6 h-6 shrink-0" [style.color]="colorSeccionTop10" fill="currentColor" viewBox="0 0 20 20">
               <path d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z"/>
             </svg>
           </div>
@@ -143,11 +130,14 @@
             </button>
 
             <div id="carousel-top"
-                 class="flex gap-4 overflow-x-auto pb-4 scroll-smooth"
+                 class="flex gap-0 overflow-x-auto pb-4 scroll-smooth items-end"
                  style="scrollbar-width: none; -ms-overflow-style: none;">
-              @for (item of mejorCalificados(); track item.recursoId) {
-                <div class="flex-none w-44 sm:w-48">
-                  <app-resource-card [resource]="item" />
+              @for (item of mejorCalificados(); track item.recursoId; let i = $index) {
+                <div class="flex items-end flex-none gap-0 mr-5">
+                  <span class="text-[8rem] sm:text-[11rem] font-black text-text-secondary/30 select-none leading-none tabular-nums shrink-0 pt-2">{{ i + 1 }}</span>
+                  <div class="w-36 sm:w-40 flex-shrink-0">
+                    <app-resource-card [resource]="item" />
+                  </div>
                 </div>
               }
             </div>
@@ -167,7 +157,7 @@
       @if (recursos().length > 0) {
         <section class="space-y-4">
           <div class="flex items-center gap-3">
-            <div class="w-1 h-8 rounded-full bg-primary"></div>
+            <div class="w-1 h-8 rounded-full shrink-0" [style.background-color]="colorSeccionTodosRecursos"></div>
             <h2 class="text-2xl font-bold text-text">Todos los Recursos</h2>
           </div>
 
@@ -197,6 +187,84 @@
             </button>
           </div>
         </section>
+      }
+
+      <!-- Secciones por tipo de recurso -->
+      @if (seccionesPorTipo().length > 0) {
+        @for (seccion of seccionesPorTipo(); track seccion.nombre) {
+          <section class="space-y-4">
+            <div class="flex items-center gap-3">
+              <div class="w-1 h-8 rounded-full shrink-0" [style.background-color]="getTipoColor(seccion.nombre)"></div>
+              <h2 class="text-2xl font-bold text-text">{{ seccion.nombre }}</h2>
+            </div>
+
+            <div class="relative group/carousel">
+              <button (click)="scrollCarousel('carousel-tipo-' + seccion.nombre, 'left')"
+                      class="absolute -left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-surface-light/90 border border-border hover:bg-primary hover:border-primary text-text-secondary hover:text-white flex items-center justify-center opacity-0 group-hover/carousel:opacity-100 transition-all duration-200 backdrop-blur-sm">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                </svg>
+              </button>
+
+              <div
+                class="flex gap-4 overflow-x-auto pb-4 scroll-smooth"
+                [attr.id]="'carousel-tipo-' + seccion.nombre"
+                style="scrollbar-width: none; -ms-overflow-style: none;">
+                @for (item of seccion.recursos; track item.recursoId) {
+                  <div class="flex-none w-44 sm:w-48">
+                    <app-resource-card [resource]="item" />
+                  </div>
+                }
+              </div>
+
+              <button (click)="scrollCarousel('carousel-tipo-' + seccion.nombre, 'right')"
+                      class="absolute -right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-surface-light/90 border border-border hover:bg-primary hover:border-primary text-text-secondary hover:text-white flex items-center justify-center opacity-0 group-hover/carousel:opacity-100 transition-all duration-200 backdrop-blur-sm">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                </svg>
+              </button>
+            </div>
+          </section>
+        }
+      }
+
+      <!-- Secciones por categoría -->
+      @if (seccionesPorCategoria().length > 0) {
+        @for (seccion of seccionesPorCategoria(); track seccion.nombre) {
+          <section class="space-y-4">
+            <div class="flex items-center gap-3">
+              <div class="w-1 h-8 rounded-full shrink-0" [style.background-color]="colorSeccionCategoria"></div>
+              <h2 class="text-2xl font-bold text-text">{{ seccion.nombre }}</h2>
+            </div>
+
+            <div class="relative group/carousel">
+              <button (click)="scrollCarousel('carousel-cat-' + seccion.nombre, 'left')"
+                      class="absolute -left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-surface-light/90 border border-border hover:bg-primary hover:border-primary text-text-secondary hover:text-white flex items-center justify-center opacity-0 group-hover/carousel:opacity-100 transition-all duration-200 backdrop-blur-sm">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                </svg>
+              </button>
+
+              <div
+                class="flex gap-4 overflow-x-auto pb-4 scroll-smooth"
+                [attr.id]="'carousel-cat-' + seccion.nombre"
+                style="scrollbar-width: none; -ms-overflow-style: none;">
+                @for (item of seccion.recursos; track item.recursoId) {
+                  <div class="flex-none w-44 sm:w-48">
+                    <app-resource-card [resource]="item" />
+                  </div>
+                }
+              </div>
+
+              <button (click)="scrollCarousel('carousel-cat-' + seccion.nombre, 'right')"
+                      class="absolute -right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-surface-light/90 border border-border hover:bg-primary hover:border-primary text-text-secondary hover:text-white flex items-center justify-center opacity-0 group-hover/carousel:opacity-100 transition-all duration-200 backdrop-blur-sm">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                </svg>
+              </button>
+            </div>
+          </section>
+        }
       }
 
       <!-- Loading state -->

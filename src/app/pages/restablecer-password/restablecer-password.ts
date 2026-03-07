@@ -25,7 +25,7 @@ export class RestablecerPassword implements OnInit {
   ngOnInit(): void {
     this.token = this.route.snapshot.queryParamMap.get('token') || '';
     if (!this.token) {
-      this.error.set('Token de recuperación no válido o expirado.');
+      this.router.navigate(['/recuperar-password']);
     }
   }
 

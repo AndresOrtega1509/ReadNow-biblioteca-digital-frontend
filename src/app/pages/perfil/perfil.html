@@ -8,6 +8,14 @@
         <p class="text-text-secondary">Cargando perfil...</p>
       </div>
     } @else if (usuario(); as u) {
+      @if (mostrarSuscripcionVencida() || (!suscripcionActivaEfectiva() && usuario() && usuario()!.rol !== 'ADMIN')) {
+        <div class="mb-6 p-4 rounded-2xl bg-danger/10 border border-danger/30 text-danger flex items-center gap-3">
+          <svg class="w-6 h-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+          <p class="font-medium">Tu suscripción ha vencido. No puedes acceder al catálogo ni leer recursos hasta que renueves.</p>
+        </div>
+      }
       <!-- Profile header -->
       <div class="relative overflow-hidden bg-surface rounded-3xl border border-border mb-8">
         <!-- Gradient background -->
@@ -36,10 +44,10 @@
                 </span>
               } @else {
                 <span class="px-3 py-1 rounded-lg text-xs font-semibold"
-                      [class]="u.suscripcionActiva
+                      [class]="suscripcionActivaEfectiva()
                         ? 'bg-success/10 text-success border border-success/20'
                         : 'bg-danger/10 text-danger border border-danger/20'">
-                  {{ u.suscripcionActiva ? 'Suscripción activa' : 'Suscripción expirada' }}
+                  {{ suscripcionActivaEfectiva() ? 'Suscripción activa' : 'Suscripción expirada' }}
                 </span>
               }
             </div>
@@ -106,9 +114,9 @@
             </div>
 
             <div class="rounded-xl p-4"
-                 [class]="u.suscripcionActiva ? 'bg-success/5 border border-success/20' : 'bg-danger/5 border border-danger/20'">
+                 [class]="suscripcionActivaEfectiva() ? 'bg-success/5 border border-success/20' : 'bg-danger/5 border border-danger/20'">
               <div class="flex items-center gap-3">
-                @if (u.suscripcionActiva) {
+                @if (suscripcionActivaEfectiva()) {
                   <svg class="w-8 h-8 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                   </svg>
@@ -118,16 +126,22 @@
                   </svg>
                 }
                 <div>
-                  <p class="font-semibold" [class]="u.suscripcionActiva ? 'text-success' : 'text-danger'">
-                    {{ u.suscripcionActiva ? 'Activa' : 'Expirada' }}
+                  <p class="font-semibold" [class]="suscripcionActivaEfectiva() ? 'text-success' : 'text-danger'">
+                    {{ suscripcionActivaEfectiva() ? 'Activa' : 'Expirada' }}
                   </p>
-                  @if (u.suscripcionActiva) {
-                    <p class="text-sm text-text-secondary">{{ getSuscripcionDias() }} días restantes</p>
+                  @if (suscripcionActivaEfectiva()) {
+                    <p class="text-sm text-text-secondary">{{ getSuscripcionRestante() }}</p>
                   }
                 </div>
               </div>
             </div>
 
+            @if (u.username === 'prueba') {
+              <button (click)="activarPrueba2Min()" [disabled]="prueba2MinLoading()" type="button"
+                      class="w-full mb-4 px-4 py-2 rounded-xl text-sm font-medium bg-accent/10 text-accent hover:bg-accent/20 border border-accent/20 transition-colors disabled:opacity-50">
+                {{ prueba2MinLoading() ? 'Configurando...' : 'Prueba: activar 2 min restantes' }}
+              </button>
+            }
             <div class="space-y-4">
               @if (u.inicioSuscripcion) {
                 <div>
@@ -144,6 +158,58 @@
             </div>
           </div>
           }
+
+          <!-- Cambiar contraseña -->
+          <div class="bg-surface rounded-2xl border border-border p-6 space-y-5">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                </svg>
+              </div>
+              <h2 class="text-lg font-bold text-text">Seguridad</h2>
+            </div>
+
+            <!-- Verificación en dos pasos -->
+            <div class="space-y-3">
+              <div class="flex items-center justify-between gap-4">
+                <div>
+                  <p class="text-sm font-medium text-text">Verificación en dos pasos</p>
+                  <p class="text-xs text-text-secondary mt-0.5">Recibe un código por correo al iniciar sesión para mayor seguridad</p>
+                </div>
+                <button (click)="toggleTwoFactor()" [disabled]="twoFactorLoading()" type="button"
+                        class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-bg disabled:opacity-50 disabled:cursor-not-allowed"
+                        [class.bg-primary]="twoFactorActiva()"
+                        [class.bg-border]="!twoFactorActiva()">
+                  <span class="sr-only">Activar o desactivar verificación en dos pasos</span>
+                  <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200"
+                        [class.translate-x-6]="twoFactorActiva()"
+                        [class.translate-x-0.5]="!twoFactorActiva()"></span>
+                </button>
+              </div>
+              @if (!twoFactorActiva()) {
+                <div class="flex items-start gap-3 p-3 rounded-xl bg-warning/10 border border-warning/30">
+                  <svg class="w-5 h-5 text-warning shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                  </svg>
+                  <p class="text-sm text-warning">
+                    La verificación en dos pasos está desactivada. Te recomendamos activarla para proteger mejor tu cuenta ante accesos no autorizados.
+                  </p>
+                </div>
+              }
+            </div>
+
+            <div class="border-t border-border pt-5">
+              <p class="text-sm text-text-secondary mb-3">Actualiza tu contraseña para mantener tu cuenta segura.</p>
+              <button (click)="abrirCambiarPassword()" type="button"
+                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 transition-colors">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+              </svg>
+              Cambiar contraseña
+            </button>
+            </div>
+          </div>
 
           <!-- Logout -->
           <button (click)="logout()"
@@ -190,7 +256,9 @@
           </div>
           <div>
             <label class="block text-sm font-medium text-text-secondary mb-1">Teléfono</label>
-            <input type="text" [(ngModel)]="editForm.telefono" name="telefono"
+            <input type="tel" [(ngModel)]="editForm.telefono" name="telefono" required
+                   minlength="10" maxlength="10" pattern="[0-9]{10}"
+                   placeholder="3001234567"
                    class="w-full px-4 py-2.5 bg-bg border border-border rounded-xl text-text text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
           </div>
           <div>
@@ -209,6 +277,65 @@
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  }
+
+  <!-- Modal Cambiar contraseña -->
+  @if (showPasswordModal()) {
+    <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="cerrarCambiarPassword()"></div>
+      <div class="relative w-full max-w-md bg-surface border border-border rounded-2xl shadow-2xl p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-bold text-text">Cambiar contraseña</h2>
+          <button type="button" (click)="cerrarCambiarPassword()" class="p-2 rounded-lg hover:bg-surface-light text-text-secondary hover:text-text transition-colors">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        @if (passwordSuccess()) {
+          <div class="mb-4 p-3 rounded-xl bg-success/10 border border-success/30 text-success text-sm flex items-center gap-2">
+            <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            {{ passwordSuccess() }}
+          </div>
+        } @else {
+          @if (passwordError()) {
+            <div class="mb-4 p-3 rounded-xl bg-danger/10 border border-danger/30 text-danger text-sm">{{ passwordError() }}</div>
+          }
+          <form (ngSubmit)="guardarPassword()" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-text-secondary mb-1">Contraseña actual</label>
+              <input type="password" [(ngModel)]="passwordForm.contrasenaActual" name="contrasenaActual" required
+                     placeholder="Ingresa tu contraseña actual"
+                     class="w-full px-4 py-2.5 bg-bg border border-border rounded-xl text-text text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-text-secondary mb-1">Nueva contraseña</label>
+              <input type="password" [(ngModel)]="passwordForm.nuevaPassword" name="nuevaPassword" required minlength="6"
+                     placeholder="Mínimo 6 caracteres"
+                     class="w-full px-4 py-2.5 bg-bg border border-border rounded-xl text-text text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-text-secondary mb-1">Confirmar nueva contraseña</label>
+              <input type="password" [(ngModel)]="passwordForm.confirmarPassword" name="confirmarPassword" required
+                     placeholder="Repite la nueva contraseña"
+                     class="w-full px-4 py-2.5 bg-bg border border-border rounded-xl text-text text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
+            </div>
+            <div class="flex gap-3 pt-2">
+              <button type="button" (click)="cerrarCambiarPassword()"
+                      class="flex-1 py-2.5 rounded-xl border border-border text-text-secondary hover:bg-surface-light font-medium text-sm transition-colors">
+                Cancelar
+              </button>
+              <button type="submit" [disabled]="savingPassword()"
+                      class="flex-1 py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-white font-semibold text-sm transition-colors disabled:opacity-50 btn-app">
+                {{ savingPassword() ? 'Guardando...' : 'Cambiar contraseña' }}
+              </button>
+            </div>
+          </form>
+        }
       </div>
     </div>
   }
