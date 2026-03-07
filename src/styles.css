@@ -1,0 +1,70 @@
+/* You can add global styles to this file, and also import other style files */
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #0f0f17;
+  --color-surface: #1a1a2e;
+  --color-surface-light: #232340;
+  --color-primary: #e21143;
+  --color-primary-hover: #ff1a53;
+  --color-secondary: #6c5ce7;
+  --color-accent: #ffd32a;
+  --color-text: #ffffff;
+  --color-text-secondary: #8b8b9e;
+  --color-border: #2a2a3e;
+  --color-success: #00b894;
+  --color-danger: #ff4757;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+}
+
+
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-surface-light);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-secondary);
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--color-primary-hover);
+}
+
+/* Botones que son enlaces: texto siempre visible (blanco) sobre fondo primario */
+a.btn-app,
+a[class*="bg-primary"] {
+  color: #ffffff !important;
+}
+
+a.btn-app:hover,
+a[class*="bg-primary"]:hover {
+  color: #ffffff !important;
+}
