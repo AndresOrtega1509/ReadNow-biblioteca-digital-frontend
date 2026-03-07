@@ -18,6 +18,11 @@ export class CalificacionService {
     return this.http.get<number>(`${this.apiUrl}/recurso/${recursoId}/promedio`);
   }
 
+  /** Calificación del usuario actual para el recurso (1-5, o 0 si no ha calificado). */
+  obtenerMiCalificacion(recursoId: number): Observable<number> {
+    return this.http.get<number>(`${this.apiUrl}/recurso/${recursoId}/mi-calificacion`);
+  }
+
   obtenerCalificaciones(recursoId: number): Observable<CalificacionResponse[]> {
     return this.http.get<CalificacionResponse[]>(`${this.apiUrl}/recurso/${recursoId}`);
   }
