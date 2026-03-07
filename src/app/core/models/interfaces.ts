@@ -21,6 +21,17 @@ export interface RecuperarPasswordRequest {
   email: string;
 }
 
+export interface RecuperarPasswordResponse {
+  exitoso: boolean;
+  mensaje: string;
+  telefonoEnmascarado?: string | null;
+}
+
+export interface VerificarTelefonoRecuperacionRequest {
+  email: string;
+  ultimos4Digitos: string;
+}
+
 export interface RestablecerPasswordRequest {
   token: string;
   nuevaPassword: string;
@@ -52,6 +63,24 @@ export interface MensajeResponse {
   mensaje: string;
 }
 
+export interface CategoriaRecursoResponse {
+  categoriaRecursoId: number;
+  nombre: string;
+}
+
+export interface CategoriaRecursoRequest {
+  nombre: string;
+}
+
+export interface TipoRecursoResponse {
+  tipoRecursoId: number;
+  nombre: string;
+}
+
+export interface TipoRecursoRequest {
+  nombre: string;
+}
+
 /** Respuesta de login: con 2FA solo mensaje; sin 2FA (desarrollo) token + datos de usuario */
 export interface LoginResult {
   exitoso: boolean;
@@ -60,6 +89,7 @@ export interface LoginResult {
   email?: string;
   rol?: string;
   nombre?: string;
+  username?: string;
   usuarioId?: number;
   sesionConfig?: SesionConfig;
 }
@@ -75,6 +105,7 @@ export interface LoginResponse {
   email: string;
   rol: string;
   nombre: string;
+  username?: string;
   usuarioId: number;
   sesionConfig: SesionConfig;
 }
@@ -90,7 +121,9 @@ export interface UsuarioResponse {
   rol: string;
   inicioSuscripcion: string;
   finSuscripcion: string;
+  finSuscripcionAt?: string | null;
   suscripcionActiva: boolean;
+  twoFactorActivo?: boolean | null;
 }
 
 export interface ActualizarPerfilRequest {
@@ -98,6 +131,12 @@ export interface ActualizarPerfilRequest {
   apellido: string;
   telefono: string;
   username: string;
+}
+
+export interface CambiarPasswordRequest {
+  contrasenaActual: string;
+  nuevaPassword: string;
+  confirmarPassword: string;
 }
 
 export interface RecursoResponse {
@@ -155,9 +194,18 @@ export interface EstadisticasResponse {
   totalCalificaciones: number;
   totalResenias: number;
   totalFavoritos: number;
+  suscripcionesActivas: number;
+  suscripcionesVencidas: number;
+  suscripcionesPorPlan: SuscripcionPorPlan[];
   recursosMasLeidos: RecursoResponse[];
   recursosMejorCalificados: RecursoResponse[];
   recursosPorTipo: RecursoPorTipo[];
+}
+
+export interface SuscripcionPorPlan {
+  nombrePlan: string;
+  activas: number;
+  vencidas: number;
 }
 
 export interface RecursoPorTipo {
