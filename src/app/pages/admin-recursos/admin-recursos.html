@@ -1,0 +1,341 @@
+<app-navbar />
+<app-session-timeout-modal />
+
+<main class="min-h-screen bg-bg pt-24 pb-16 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-7xl mx-auto">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-bold text-text tracking-tight">Gestión de Recursos</h1>
+        <p class="text-text-secondary text-sm sm:text-base mt-1">Administra y sube libros, tesis y revistas a la biblioteca</p>
+      </div>
+      <button
+        (click)="abrirFormulario()"
+        class="btn-app inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-primary hover:bg-primary-hover text-white font-bold rounded-xl transition-all duration-200 shadow-lg shadow-primary/20 hover:shadow-primary/40 cursor-pointer text-base whitespace-nowrap">
+        <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+        </svg>
+        <span>Agregar recurso (nuevo)</span>
+      </button>
+    </div>
+
+    <!-- Success / Error Toasts -->
+    @if (mensaje()) {
+      <div class="mb-6 flex items-center gap-3 px-5 py-3.5 bg-success/10 border border-success/30 rounded-xl text-success text-sm font-medium animate-[fadeIn_0.3s_ease]">
+        <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        {{ mensaje() }}
+      </div>
+    }
+    @if (error() && !showForm()) {
+      <div class="mb-6 flex items-center gap-3 px-5 py-3.5 bg-danger/10 border border-danger/30 rounded-xl text-danger text-sm font-medium animate-[fadeIn_0.3s_ease]">
+        <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+        </svg>
+        {{ error() }}
+      </div>
+    }
+
+    <!-- Search Bar -->
+    <div class="mb-6">
+      <div class="relative max-w-xl">
+        <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+        </svg>
+        <input
+          type="text"
+          placeholder="Buscar por nombre, autor, tipo o categoría..."
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+          class="w-full pl-12 pr-4 py-3 bg-surface border border-border rounded-xl text-text placeholder-text-secondary text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200" />
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    @if (loading()) {
+      <div class="flex flex-col items-center justify-center py-24 gap-4">
+        <div class="w-12 h-12 border-4 border-surface-light border-t-primary rounded-full animate-spin"></div>
+        <p class="text-text-secondary text-sm">Cargando recursos...</p>
+      </div>
+    } @else {
+      <!-- Resources Table -->
+      <div class="bg-surface border border-border rounded-2xl overflow-hidden shadow-xl">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm min-w-[640px]">
+            <thead>
+              <tr class="border-b border-border bg-surface-light/50">
+                <th class="text-left px-4 py-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-14">ID</th>
+                <th class="text-left px-4 py-4 text-xs font-semibold text-text-secondary uppercase tracking-wider min-w-[160px]">Nombre</th>
+                <th class="text-left px-4 py-4 text-xs font-semibold text-text-secondary uppercase tracking-wider min-w-[120px]">Autor</th>
+                <th class="text-left px-4 py-4 text-xs font-semibold text-text-secondary uppercase tracking-wider min-w-[90px]">Tipo</th>
+                <th class="text-left px-4 py-4 text-xs font-semibold text-text-secondary uppercase tracking-wider min-w-[100px]">Categoría</th>
+                <th class="text-left px-4 py-4 text-xs font-semibold text-text-secondary uppercase tracking-wider min-w-[90px]">Fecha</th>
+                <th class="text-left px-4 py-4 text-xs font-semibold text-text-secondary uppercase tracking-wider min-w-[80px]">Calificación</th>
+                <th class="text-right px-4 py-4 text-xs font-semibold text-text-secondary uppercase tracking-wider min-w-[140px]">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (recurso of recursosFiltrados(); track recurso.recursoId) {
+                <tr class="border-b border-border/50 hover:bg-surface-light/40 transition-colors duration-150">
+                  <td class="px-4 py-4 text-text-secondary font-mono text-xs">{{ recurso.recursoId }}</td>
+                  <td class="px-4 py-4">
+                    <div class="font-medium text-text max-w-[200px] truncate">{{ recurso.nombre }}</div>
+                  </td>
+                  <td class="px-4 py-4 text-text-secondary">{{ recurso.autor || '—' }}</td>
+                  <td class="px-4 py-4">
+                    <span class="inline-flex px-2.5 py-1 text-xs font-medium rounded-lg bg-secondary/15 text-secondary">
+                      {{ recurso.tipoRecurso }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-4">
+                    <span class="inline-flex px-2.5 py-1 text-xs font-medium rounded-lg bg-accent/15 text-accent">
+                      {{ recurso.categoriaRecurso || '—' }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-4 text-text-secondary text-xs">{{ recurso.fechaPublicacion }}</td>
+                  <td class="px-4 py-4">
+                    <div class="flex items-center gap-1.5">
+                      <svg class="w-4 h-4 text-accent" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/>
+                      </svg>
+                      <span class="text-sm text-text font-medium">{{ recurso.calificacionPromedio | number:'1.1-1' }}</span>
+                      <span class="text-xs text-text-secondary">({{ recurso.totalCalificaciones }})</span>
+                    </div>
+                  </td>
+                  <td class="px-4 py-4">
+                    <div class="flex items-center justify-end gap-2">
+                      <button
+                        (click)="abrirFormulario(recurso)"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-secondary/10 text-secondary hover:bg-secondary/20 transition-colors duration-200 cursor-pointer">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/>
+                        </svg>
+                        Editar
+                      </button>
+                      <button
+                        (click)="eliminar(recurso.recursoId)"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-danger/10 text-danger hover:bg-danger/20 transition-colors duration-200 cursor-pointer">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
+                        </svg>
+                        Eliminar
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="8" class="px-4 py-16 text-center">
+                    <svg class="w-16 h-16 mx-auto text-text-secondary/30 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/>
+                    </svg>
+                    <p class="text-text-secondary text-sm mb-4">No hay recursos en el catálogo</p>
+                    <button (click)="abrirFormulario()"
+                            class="inline-flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary-hover text-white font-semibold rounded-xl transition-all duration-200 cursor-pointer">
+                      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+                      </svg>
+                      Agregar primer recurso
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Table Footer -->
+        <div class="px-4 py-3 bg-surface-light/30 border-t border-border flex items-center justify-between">
+          <p class="text-xs text-text-secondary">
+            {{ recursosFiltrados().length }} recurso{{ recursosFiltrados().length !== 1 ? 's' : '' }}
+          </p>
+          <button (click)="abrirFormulario()"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors cursor-pointer">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+            </svg>
+            Agregar recurso
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</main>
+
+<!-- Create/Edit Modal -->
+@if (showForm()) {
+  <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="cerrarFormulario()"></div>
+
+    <!-- Modal Card -->
+    <div class="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-surface border border-border rounded-2xl shadow-2xl animate-[fadeIn_0.2s_ease]">
+
+      <!-- Modal Header -->
+      <div class="sticky top-0 z-10 flex items-center justify-between px-6 py-4 bg-surface border-b border-border">
+        <h2 class="text-xl font-bold text-text">
+          {{ editingId() ? 'Editar Recurso' : 'Nuevo Recurso' }}
+        </h2>
+        <button
+          (click)="cerrarFormulario()"
+          class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-surface-light text-text-secondary hover:text-text transition-colors duration-200 cursor-pointer">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="px-6 py-5 space-y-5">
+
+        <!-- Error inside modal -->
+        @if (error()) {
+          <div class="flex items-center gap-3 px-4 py-3 bg-danger/10 border border-danger/30 rounded-xl text-danger text-sm">
+            <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+            </svg>
+            {{ error() }}
+          </div>
+        }
+
+        <!-- Row: Nombre + Autor -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-text-secondary mb-1.5">Nombre *</label>
+            <input
+              type="text"
+              [(ngModel)]="form.nombre"
+              placeholder="Nombre del recurso"
+              class="w-full px-4 py-2.5 bg-bg border border-border rounded-xl text-text text-sm placeholder-text-secondary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-text-secondary mb-1.5">Autor *</label>
+            <input
+              type="text"
+              [(ngModel)]="form.autor"
+              placeholder="Nombre del autor"
+              class="w-full px-4 py-2.5 bg-bg border border-border rounded-xl text-text text-sm placeholder-text-secondary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200" />
+          </div>
+        </div>
+
+        <!-- Descripción -->
+        <div>
+          <label class="block text-sm font-medium text-text-secondary mb-1.5">Descripción</label>
+          <textarea
+            [(ngModel)]="form.descripcion"
+            rows="3"
+            placeholder="Descripción del recurso..."
+            class="w-full px-4 py-2.5 bg-bg border border-border rounded-xl text-text text-sm placeholder-text-secondary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 resize-none"></textarea>
+        </div>
+
+        <!-- Row: Idioma + Fecha -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-text-secondary mb-1.5">Idioma</label>
+            <input
+              type="text"
+              [(ngModel)]="form.idioma"
+              placeholder="Español"
+              class="w-full px-4 py-2.5 bg-bg border border-border rounded-xl text-text text-sm placeholder-text-secondary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-text-secondary mb-1.5">Fecha de Publicación</label>
+            <input
+              type="date"
+              [(ngModel)]="form.fechaPublicacion"
+              class="w-full px-4 py-2.5 bg-bg border border-border rounded-xl text-text text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 [color-scheme:dark]" />
+          </div>
+        </div>
+
+        <!-- URL Portada (opcional) -->
+        <div>
+          <label class="block text-sm font-medium text-text-secondary mb-1.5">URL de la portada (opcional)</label>
+          <input
+            type="url"
+            [(ngModel)]="form.urlPortada"
+            placeholder="https://... (imagen de la portada del libro)"
+            class="w-full px-4 py-2.5 bg-bg border border-border rounded-xl text-text text-sm placeholder-text-secondary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200" />
+        </div>
+
+        <!-- Row: Tipo + Categoría -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-text-secondary mb-1.5">Tipo de Recurso</label>
+            <select
+              [(ngModel)]="form.tipoRecursoId"
+              class="w-full px-4 py-2.5 bg-bg border border-border rounded-xl text-text text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 cursor-pointer">
+              @for (tipo of tipos; track tipo.id) {
+                <option [ngValue]="tipo.id">{{ tipo.nombre }}</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-text-secondary mb-1.5">Categoría</label>
+            <select
+              [(ngModel)]="form.categoriaRecursoId"
+              class="w-full px-4 py-2.5 bg-bg border border-border rounded-xl text-text text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 cursor-pointer">
+              <option [ngValue]="null">Sin categoría</option>
+              @for (cat of categorias; track cat.id) {
+                <option [ngValue]="cat.id">{{ cat.nombre }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <!-- File Upload -->
+        @if (!editingId()) {
+          <div>
+            <label class="block text-sm font-medium text-text-secondary mb-1.5">Archivo PDF *</label>
+            <label class="group flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-border rounded-xl bg-bg hover:border-primary/50 hover:bg-primary/5 transition-all duration-200 cursor-pointer">
+              <input
+                type="file"
+                accept=".pdf"
+                (change)="onFileSelected($event)"
+                class="hidden" />
+              @if (selectedFileName()) {
+                <svg class="w-10 h-10 text-success mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <p class="text-sm text-text font-medium">{{ selectedFileName() }}</p>
+                <p class="text-xs text-text-secondary mt-1">Click para cambiar archivo</p>
+              } @else {
+                <svg class="w-10 h-10 text-text-secondary/40 group-hover:text-primary/60 mb-2 transition-colors duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z"/>
+                </svg>
+                <p class="text-sm text-text-secondary group-hover:text-text transition-colors duration-200">
+                  Click para seleccionar un archivo PDF
+                </p>
+                <p class="text-xs text-text-secondary/60 mt-1">Solo archivos .pdf</p>
+              }
+            </label>
+          </div>
+        }
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="sticky bottom-0 flex items-center justify-end gap-3 px-6 py-4 bg-surface border-t border-border">
+        <button
+          (click)="cerrarFormulario()"
+          class="px-5 py-2.5 text-sm font-medium text-text-secondary hover:text-text border border-border rounded-xl hover:bg-surface-light transition-all duration-200 cursor-pointer">
+          Cancelar
+        </button>
+        <button
+          (click)="guardar()"
+          [disabled]="saving()"
+          class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-text bg-primary hover:bg-primary-hover rounded-xl transition-all duration-200 shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+          @if (saving()) {
+            <div class="w-4 h-4 border-2 border-text/30 border-t-text rounded-full animate-spin"></div>
+            Guardando...
+          } @else {
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+            </svg>
+            {{ editingId() ? 'Actualizar' : 'Crear Recurso' }}
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
