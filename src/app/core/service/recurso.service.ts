@@ -36,18 +36,25 @@ export class RecursoService {
     return this.http.get<RecursoResponse[]>(`${this.apiUrl}/api/catalogo/recursos/categoria/${categoriaId}`);
   }
 
-  crearRecurso(recurso: RecursoRequest, archivo: File | null): Observable<RecursoResponse> {
+  crearRecurso(recurso: RecursoRequest, archivo: File | null, portada: File | null): Observable<RecursoResponse> {
     const formData = new FormData();
     formData.append('recurso', new Blob([JSON.stringify(recurso)], { type: 'application/json' }));
-    if (archivo) {
-      formData.append('archivo', archivo);
-    }
+    if (archivo) formData.append('archivo', archivo);
+    if (portada) formData.append('portada', portada);
     return this.http.post<RecursoResponse>(`${this.apiUrl}/api/admin/recursos`, formData);
   }
 
-  actualizarRecurso(id: number, recurso: RecursoRequest): Observable<RecursoResponse> {
-    debugger;
-    return this.http.put<RecursoResponse>(`${this.apiUrl}/api/admin/recursos/${id}`, recurso);
+  actualizarRecurso(
+    id: number,
+    recurso: RecursoRequest,
+    archivo: File | null,
+    portada: File | null
+  ): Observable<RecursoResponse> {
+    const formData = new FormData();
+    formData.append('recurso', new Blob([JSON.stringify(recurso)], { type: 'application/json' }));
+    if (archivo) formData.append('archivo', archivo);
+    if (portada) formData.append('portada', portada);
+    return this.http.put<RecursoResponse>(`${this.apiUrl}/api/admin/recursos/${id}`, formData);
   }
 
   eliminarRecurso(id: number): Observable<MensajeResponse> {

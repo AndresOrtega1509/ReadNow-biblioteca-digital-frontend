@@ -1,12 +1,13 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { environment } from '../../../environments/environment';
 import { Observable, tap } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import {
   LoginRequest, LoginResponse, LoginResult, MensajeResponse,
   RegistroRequest, VerificacionCodigoRequest,
-  RecuperarPasswordRequest, RestablecerPasswordRequest,
+  RecuperarPasswordRequest, RecuperarPasswordResponse, RestablecerPasswordRequest,
+  VerificarTelefonoRecuperacionRequest,
   SesionConfig
 } from '../models/interfaces';
 
@@ -17,6 +18,7 @@ export class AuthService {
 
   readonly isAuthenticated = computed(() => !!this.getToken());
   readonly userName = computed(() => this.currentUser()?.nombre ?? '');
+  readonly userUsername = computed(() => this.currentUser()?.username ?? this.currentUser()?.nombre ?? '');
   readonly userRole = computed(() => this.currentUser()?.rol ?? '');
   readonly isAdmin = computed(() => this.userRole() === 'ADMIN');
   readonly sesionConfig = computed(() => this.currentUser()?.sesionConfig);
@@ -53,8 +55,12 @@ export class AuthService {
     );
   }
 
-  recuperarPassword(request: RecuperarPasswordRequest): Observable<MensajeResponse> {
-    return this.http.post<MensajeResponse>(`${this.apiUrl}/recuperar`, request);
+  recuperarPassword(request: RecuperarPasswordRequest): Observable<RecuperarPasswordResponse> {
+    return this.http.post<RecuperarPasswordResponse>(`${this.apiUrl}/recuperar`, request);
+  }
+
+  verificarTelefonoRecuperacion(request: VerificarTelefonoRecuperacionRequest): Observable<MensajeResponse> {
+    return this.http.post<MensajeResponse>(`${this.apiUrl}/recuperar/verificar-telefono`, request);
   }
 
   restablecerPassword(request: RestablecerPasswordRequest): Observable<MensajeResponse> {
