@@ -79,7 +79,7 @@
     <!-- Resultados de búsqueda (el buscador está en la barra superior; al escribir se busca en tiempo real) -->
     @if (searching()) {
       <section class="space-y-6">
-        <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex flex-wrap items-center justify-between gap-3 overflow-x-hidden">
           <h2 class="text-2xl font-bold text-text">
             Resultados para "<span class="text-primary">{{ searchQuery }}</span>"
           </h2>
