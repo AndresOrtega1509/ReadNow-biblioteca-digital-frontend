@@ -2,6 +2,9 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { adminGuard } from './core/guards/admin.guard';
 import { suscripcionGuard } from './core/guards/suscripcion.guard';
+import { PoliticaPrivacidad } from './pages/politica-privacidad/politica-privacidad';
+import { PoliticasLegales } from './pages/politicas-legales/politicas-legales';
+import { QuienesSomos } from './pages/quienes-somos/quienes-somos';
 
 
 export const routes: Routes = [
@@ -20,5 +23,8 @@ export const routes: Routes = [
   { path: 'admin/categorias', loadComponent: () => import('./pages/admin-categorias/admin-categorias').then(m => m.AdminCategorias), canActivate: [adminGuard] },
   { path: 'admin/tipos-recurso', loadComponent: () => import('./pages/admin-tipos-recurso/admin-tipos-recurso').then(m => m.AdminTiposRecurso), canActivate: [adminGuard] },
   { path: 'admin/estadisticas', loadComponent: () => import('./pages/admin-estadisticas/admin-estadisticas').then(m => m.AdminEstadisticas), canActivate: [adminGuard] },
+  { path: 'politica-privacidad', component: PoliticaPrivacidad },
+  { path: 'politicas-legales', component: PoliticasLegales },
+  { path: 'quienes-somos', component: QuienesSomos },
   { path: '**', redirectTo: '' },
 ];

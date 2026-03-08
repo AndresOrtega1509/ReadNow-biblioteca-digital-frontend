@@ -19,6 +19,7 @@ export class Registro {
   loading = signal(false);
   error = signal('');
   success = signal('');
+  aceptaDatos: boolean = false;
 
   constructor(private authService: AuthService, private router: Router) {}
 
@@ -27,6 +28,12 @@ export class Registro {
   }
 
   onSubmit(): void {
+
+  if (!this.aceptaDatos) {
+    this.error.set('Debes aceptar el tratamiento de datos para continuar.');
+    return;
+  }
+
     if (this.password !== this.confirmarPassword) {
       this.error.set('Las contraseñas no coinciden');
       return;
