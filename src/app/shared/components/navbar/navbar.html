@@ -2,36 +2,52 @@
   <div class="w-full  mx-auto px-4 sm:px-6 lg:px-8">
     <div class=" nav flex items-center justify-between h-16">
 
-      <!-- Logo -->
-      <a routerLink="/" class="flex items-center gap-1 shrink-0">
-        <span class="text-2xl font-extrabold text-text tracking-tight">Read</span>
-        <span class="text-2xl font-extrabold text-primary">Now</span>
-      </a>
+      <!-- Logo: sin enlace cuando está logueado (no redirige); con enlace al inicio cuando no está logueado -->
+      @if (authService.isAuthenticated()) {
+        <div class="flex items-center gap-1 shrink-0 cursor-default select-none">
+          <span class="text-2xl font-extrabold text-text tracking-tight">Read</span>
+          <span class="text-2xl font-extrabold text-primary">Now</span>
+        </div>
+      } @else {
+        <a routerLink="/" class="flex items-center gap-1 shrink-0">
+          <span class="text-2xl font-extrabold text-text tracking-tight">Read</span>
+          <span class="text-2xl font-extrabold text-primary">Now</span>
+        </a>
+      }
 
       <!-- Desktop Nav Links -->
       <div class="hidden md:flex items-center gap-1">
         @if (authService.isAuthenticated()) {
-          <a routerLink="/catalogo" routerLinkActive="!text-primary"
-            class="px-3 py-2 text-sm font-medium text-text-secondary hover:text-text rounded-lg transition-colors duration-200">
+          <a routerLink="/catalogo" routerLinkActive="bg-primary/15 text-primary"
+             [routerLinkActiveOptions]="{ exact: false }"
+             class="px-4 py-2.5 text-sm font-medium text-text-secondary hover:text-text rounded-lg transition-colors duration-200">
             Catálogo
           </a>
-          <a routerLink="/favoritos" routerLinkActive="!text-primary"
-             class="px-3 py-2 text-sm font-medium text-text-secondary hover:text-text rounded-lg transition-colors duration-200">
+          <a routerLink="/favoritos" routerLinkActive="bg-primary/15 text-primary"
+             class="px-4 py-2.5 text-sm font-medium text-text-secondary hover:text-text rounded-lg transition-colors duration-200">
             Favoritos
           </a>
-          <a routerLink="/historial" routerLinkActive="!text-primary"
-             class="px-3 py-2 text-sm font-medium text-text-secondary hover:text-text rounded-lg transition-colors duration-200">
+          <a routerLink="/historial" routerLinkActive="bg-primary/15 text-primary"
+             class="px-4 py-2.5 text-sm font-medium text-text-secondary hover:text-text rounded-lg transition-colors duration-200">
             Historial
           </a>
 
           @if (authService.isAdmin()) {
             <div class="w-px h-5 bg-border mx-2"></div>
-            <a routerLink="/admin/recursos" routerLinkActive="!text-primary"
-               class="px-3 py-2 text-sm font-medium text-secondary hover:text-text rounded-lg transition-colors duration-200">
+            <a routerLink="/admin/recursos" routerLinkActive="bg-primary/15 text-primary"
+               class="px-4 py-2.5 text-sm font-medium text-secondary hover:text-text rounded-lg transition-colors duration-200">
               Gestionar Recursos
             </a>
-            <a routerLink="/admin/estadisticas" routerLinkActive="!text-primary"
-               class="px-3 py-2 text-sm font-medium text-secondary hover:text-text rounded-lg transition-colors duration-200">
+            <a routerLink="/admin/categorias" routerLinkActive="bg-primary/15 text-primary"
+               class="px-4 py-2.5 text-sm font-medium text-secondary hover:text-text rounded-lg transition-colors duration-200">
+              Categorías
+            </a>
+            <a routerLink="/admin/tipos-recurso" routerLinkActive="bg-primary/15 text-primary"
+               class="px-4 py-2.5 text-sm font-medium text-secondary hover:text-text rounded-lg transition-colors duration-200">
+              Tipos de Recurso
+            </a>
+            <a routerLink="/admin/estadisticas" routerLinkActive="bg-primary/15 text-primary"
+               class="px-4 py-2.5 text-sm font-medium text-secondary hover:text-text rounded-lg transition-colors duration-200">
               Estadísticas
             </a>
           }
@@ -39,20 +55,32 @@
       </div>
 
       <!-- Right Section -->
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-4">
 
-        <!-- Search Bar (desktop) -->
+        <!-- Search: lupa toggles bar (desktop) -->
         @if (authService.isAuthenticated()) {
-          <div class="hidden lg:flex items-center relative">
-            <svg class="absolute left-3 w-4 h-4 text-text-secondary pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
-            </svg>
-            <input
-              type="text"
-              placeholder="Buscar recursos..."
-              [(value)]="searchQuery"
-              class="w-56 pl-10 pr-4 py-2 text-sm bg-bg border border-border rounded-full text-text placeholder-text-secondary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 hidden"
-            />
+          <div class="hidden lg:flex items-center">
+            @if (showSearchBar) {
+              <div class="flex items-center gap-2">
+                <input
+                  type="text"
+                  placeholder="Buscar libros, tesis, revistas..."
+                  [ngModel]="searchQuery"
+                  (ngModelChange)="onSearchInput($event)"
+                  (keyup.enter)="onSearchSubmit()"
+                  class="w-56 pl-3 pr-4 py-2 text-sm bg-bg border border-border rounded-lg text-text placeholder-text-secondary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200"
+                />
+                <button (click)="toggleSearch()" class="p-2 rounded-lg hover:bg-surface-light text-text-secondary" type="button" aria-label="Cerrar búsqueda">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+              </div>
+            } @else {
+              <button (click)="toggleSearch()" class="p-2.5 rounded-lg hover:bg-surface-light text-text-secondary hover:text-text transition-colors" type="button" aria-label="Buscar">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+                </svg>
+              </button>
+            }
           </div>
         }
 
@@ -78,10 +106,10 @@
               class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-surface-light transition-colors duration-200 cursor-pointer">
               <div class="w-8 h-8 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center">
                 <span class="text-sm font-semibold text-primary">
-                  {{ authService.userName().charAt(0).toUpperCase() }}
+                  {{ (authService.userUsername() || authService.userName() || 'U').charAt(0).toUpperCase() }}
                 </span>
               </div>
-              <span class="text-sm font-medium text-text hidden lg:inline">{{ authService.userName() }}</span>
+              <span class="text-sm font-medium text-text hidden lg:inline">{{ authService.userUsername() || authService.userName() }}</span>
               <svg class="w-4 h-4 text-text-secondary transition-transform duration-200"
                    [class.rotate-180]="showUserMenu"
                    fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -162,6 +190,14 @@
             <a routerLink="/admin/recursos" (click)="showMobileMenu = false"
                class="block px-3 py-2.5 text-sm font-medium text-text-secondary hover:text-text hover:bg-surface-light rounded-lg transition-colors duration-200">
               Gestionar Recursos
+            </a>
+            <a routerLink="/admin/categorias" (click)="showMobileMenu = false"
+               class="block px-3 py-2.5 text-sm font-medium text-text-secondary hover:text-text hover:bg-surface-light rounded-lg transition-colors duration-200">
+              Categorías
+            </a>
+            <a routerLink="/admin/tipos-recurso" (click)="showMobileMenu = false"
+               class="block px-3 py-2.5 text-sm font-medium text-text-secondary hover:text-text hover:bg-surface-light rounded-lg transition-colors duration-200">
+              Tipos de Recurso
             </a>
             <a routerLink="/admin/estadisticas" (click)="showMobileMenu = false"
                class="block px-3 py-2.5 text-sm font-medium text-text-secondary hover:text-text hover:bg-surface-light rounded-lg transition-colors duration-200">

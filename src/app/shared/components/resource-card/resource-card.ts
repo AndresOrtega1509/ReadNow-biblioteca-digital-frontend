@@ -1,6 +1,7 @@
 import { Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { RecursoResponse } from '../../../core/models/interfaces';
+import { getTipoRecursoColor } from '../../../core/constants/tipo-recurso-colors';
 
 @Component({
     selector: 'app-resource-card',
@@ -17,15 +18,7 @@ export class ResourceCard {
   }
 
   getTypeColor(): string {
-    const type = this.resource().tipoRecurso?.toLowerCase() || '';
-    const colors: Record<string, string> = {
-      'libro': '#6c5ce7',
-      'tesis': '#00b894',
-      'revista': '#e17055',
-      'artículo': '#0984e3',
-      'manual': '#fdcb6e',
-    };
-    return colors[type] || '#6c5ce7';
+    return getTipoRecursoColor(this.resource().tipoRecurso);
   }
 
   getTypeGradient(): string {

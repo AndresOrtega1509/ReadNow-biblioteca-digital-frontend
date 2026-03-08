@@ -1,0 +1,176 @@
+<div class="a11y-widget" role="region" aria-label="Menú de accesibilidad">
+
+  <!-- Botón flotante -->
+  <button
+    type="button"
+    (click)="open = !open"
+    class="a11y-fab"
+    [attr.aria-expanded]="open"
+    aria-label="Abrir menú de accesibilidad (Ctrl+U)">
+    <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 2c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm9 7h-6v13h-2v-6h-2v6H9V9H3V7h18v2z"/>
+    </svg>
+  </button>
+
+  @if (open) {
+    <div class="a11y-panel" role="dialog" aria-modal="true" aria-labelledby="a11y-title">
+
+      <!-- Cabecera -->
+      <div class="a11y-header">
+        <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 2c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm9 7h-6v13h-2v-6h-2v6H9V9H3V7h18v2z"/>
+        </svg>
+        <h2 id="a11y-title" class="a11y-header-title">Accesibilidad</h2>
+        <button type="button" (click)="open = false" class="a11y-close-btn" aria-label="Cerrar">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="a11y-body">
+
+        <!-- Tamaño del contenido -->
+        <div class="a11y-section">
+          <p class="a11y-section-label">Tamaño del contenido</p>
+          <div class="a11y-size-row">
+            <button type="button" class="a11y-size-btn" (click)="a11y.decrementFont()"
+                    aria-label="Reducir texto" [disabled]="a11y.fontStep() <= -2">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 13H5v-2h14v2z"/>
+              </svg>
+            </button>
+            <span class="a11y-size-label">{{ a11y.fontPercent }}</span>
+            <button type="button" class="a11y-size-btn a11y-size-btn-plus" (click)="a11y.incrementFont()"
+                    aria-label="Aumentar texto" [disabled]="a11y.fontStep() >= 6">
+              <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Opciones de contraste (2 columnas) -->
+        <div class="a11y-section">
+          <p class="a11y-section-label">Contraste y color</p>
+          <div class="a11y-grid-2">
+
+            <!-- Contraste oscuro -->
+            <button type="button" class="a11y-card"
+                    [class.a11y-card-active]="a11y.contrastMode() === 'dark'"
+                    (click)="a11y.setContrastMode('dark')">
+              <svg class="a11y-card-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+              </svg>
+              <span>Contraste oscuro</span>
+            </button>
+
+            <!-- Contraste luz -->
+            <button type="button" class="a11y-card"
+                    [class.a11y-card-active]="a11y.contrastMode() === 'light'"
+                    (click)="a11y.setContrastMode('light')">
+              <svg class="a11y-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <circle cx="12" cy="12" r="5" fill="currentColor"/>
+                <line x1="12" y1="1" x2="12" y2="3"/>
+                <line x1="12" y1="21" x2="12" y2="23"/>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                <line x1="1" y1="12" x2="3" y2="12"/>
+                <line x1="21" y1="12" x2="23" y2="12"/>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+              </svg>
+              <span>Contraste de luz</span>
+            </button>
+
+            <!-- Monocromo -->
+            <button type="button" class="a11y-card"
+                    [class.a11y-card-active]="a11y.contrastMode() === 'mono'"
+                    (click)="a11y.setContrastMode('mono')">
+              <svg class="a11y-card-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9c-2.48.47-4 2.74-4 4.5s1.52 4.03 4 4.5z"/>
+              </svg>
+              <span>Monocromo</span>
+            </button>
+
+            <!-- Alto contraste -->
+            <button type="button" class="a11y-card"
+                    [class.a11y-card-active]="a11y.contrastMode() === 'high'"
+                    (click)="a11y.setContrastMode('high')">
+              <svg class="a11y-card-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18V4c4.41 0 8 3.59 8 8s-3.59 8-8 8z"/>
+              </svg>
+              <span>Alto contraste</span>
+            </button>
+
+          </div>
+        </div>
+
+        <!-- Saturación (2 columnas) -->
+        <div class="a11y-section">
+          <p class="a11y-section-label">Saturación</p>
+          <div class="a11y-grid-2">
+
+            <button type="button" class="a11y-card"
+                    [class.a11y-card-active]="a11y.saturation() === 'high'"
+                    (click)="a11y.setSaturation('high')">
+              <svg class="a11y-card-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2a10 10 0 0 0 0 20c1.4 0 2.4-1.2 2.4-2.7 0-.72-.27-1.36-.71-1.85-.43-.48-.7-1.1-.7-1.78 0-1.48 1.2-2.67 2.68-2.67h3.17C20.5 13 22 11.47 22 9.6 22 5.4 17.52 2 12 2z"/>
+              </svg>
+              <span>Alta saturación</span>
+            </button>
+
+            <button type="button" class="a11y-card"
+                    [class.a11y-card-active]="a11y.saturation() === 'low'"
+                    (click)="a11y.setSaturation('low')">
+              <svg class="a11y-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M12 2a10 10 0 0 0 0 20c1.4 0 2.4-1.2 2.4-2.7 0-.72-.27-1.36-.71-1.85-.43-.48-.7-1.1-.7-1.78 0-1.48 1.2-2.67 2.68-2.67h3.17C20.5 13 22 11.47 22 9.6 22 5.4 17.52 2 12 2z"/>
+              </svg>
+              <span>Baja saturación</span>
+            </button>
+
+          </div>
+        </div>
+
+        <!-- Modos de lectura (toggles) -->
+        <div class="a11y-section">
+          <p class="a11y-section-label">Modos de lectura</p>
+
+          <button type="button" class="a11y-toggle-row"
+                  [class.a11y-toggle-row-active]="a11y.dyslexiaMode()"
+                  (click)="a11y.toggleDyslexia()">
+            <div class="a11y-toggle-text">
+              <span class="a11y-toggle-title">Modo dislexia</span>
+              <span class="a11y-toggle-desc">Fuente más legible y espaciado ampliado</span>
+            </div>
+            <div class="a11y-switch" [class.a11y-switch-on]="a11y.dyslexiaMode()">
+              <div class="a11y-switch-thumb"></div>
+            </div>
+          </button>
+
+          <button type="button" class="a11y-toggle-row"
+                  [class.a11y-toggle-row-active]="a11y.highlightLinks()"
+                  (click)="a11y.toggleHighlightLinks()">
+            <div class="a11y-toggle-text">
+              <span class="a11y-toggle-title">Resaltar enlaces</span>
+              <span class="a11y-toggle-desc">Subraya y enmarca los enlaces de la página</span>
+            </div>
+            <div class="a11y-switch" [class.a11y-switch-on]="a11y.highlightLinks()">
+              <div class="a11y-switch-thumb"></div>
+            </div>
+          </button>
+        </div>
+
+        <!-- Acciones -->
+        <div class="a11y-actions">
+          <button type="button" class="a11y-btn-reset" (click)="a11y.resetAll()">
+            Restablecer configuración
+          </button>
+        </div>
+
+        <p class="a11y-shortcut-hint">Atajo: Ctrl + U</p>
+
+      </div><!-- /body -->
+    </div>
+  }
+</div>
