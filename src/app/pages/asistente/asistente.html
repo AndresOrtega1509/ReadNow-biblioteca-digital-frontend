@@ -1,0 +1,71 @@
+<div class="min-h-screen bg-bg flex flex-col">
+  <app-navbar />
+
+  <main class="flex-1 pt-24 pb-8 px-4 sm:px-6 max-w-3xl mx-auto w-full flex flex-col min-h-0">
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-text tracking-tight">Asistente ReadNow</h1>
+      <p class="text-text-secondary text-sm mt-1">
+        Respuestas automáticas: suscripción, vigencia, planes disponibles y uso del catálogo.
+      </p>
+    </div>
+
+    <div
+      class="flex-1 min-h-[320px] sm:min-h-[420px] max-h-[60vh] overflow-y-auto rounded-2xl border border-border bg-surface p-4 sm:p-5 space-y-4 shadow-inner">
+      @for (linea of mensajes(); track $index) {
+        <div
+          class="flex"
+          [class.justify-end]="linea.rol === 'user'"
+          [class.justify-start]="linea.rol === 'assistant'">
+          <div
+            class="max-w-[90%] rounded-2xl px-4 py-3 text-sm leading-relaxed"
+            [class.bg-primary/20]="linea.rol === 'user'"
+            [class.text-text]="linea.rol === 'user'"
+            [class.border]="linea.rol === 'user'"
+            [class.border-primary/25]="linea.rol === 'user'"
+            [class.bg-surface-light]="linea.rol === 'assistant'"
+            [class.text-text-secondary]="linea.rol === 'assistant'"
+            [class.border]="linea.rol === 'assistant'"
+            [class.border-border]="linea.rol === 'assistant'">
+            @if (linea.rol === 'assistant') {
+              <span class="text-xs font-semibold text-secondary uppercase tracking-wide block mb-1">Asistente</span>
+            } @else {
+              <span class="text-xs font-semibold text-primary uppercase tracking-wide block mb-1">Tú</span>
+            }
+            <p class="text-text whitespace-pre-wrap">{{ linea.texto }}</p>
+          </div>
+        </div>
+      }
+      @if (enviando()) {
+        <div class="flex justify-start">
+          <div class="rounded-2xl px-4 py-3 bg-surface-light border border-border text-sm text-text-secondary flex items-center gap-2">
+            <span class="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></span>
+            Pensando…
+          </div>
+        </div>
+      }
+      <div #scrollAnchor class="h-1 w-full shrink-0" aria-hidden="true"></div>
+    </div>
+
+    <div class="mt-4 flex gap-2 items-end">
+      <textarea
+        [(ngModel)]="entrada"
+        (keydown.control.enter)="enviar()"
+        (keydown.meta.enter)="enviar()"
+        rows="2"
+        placeholder="Escribe tu pregunta…"
+        [disabled]="enviando()"
+        class="flex-1 px-4 py-3 rounded-xl bg-surface border border-border text-text text-sm placeholder-text-secondary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-none disabled:opacity-50">
+      </textarea>
+      <button
+        type="button"
+        (click)="enviar()"
+        [disabled]="enviando() || !entrada.trim()"
+        class="shrink-0 px-5 py-3 rounded-xl bg-primary hover:bg-primary-hover text-white font-semibold text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+        Enviar
+      </button>
+    </div>
+  </main>
+
+  <app-footer />
+  <app-session-timeout-modal />
+</div>

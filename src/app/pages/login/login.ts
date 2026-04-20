@@ -1,6 +1,6 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/service/auth.service';
 
 @Component({
@@ -8,13 +8,30 @@ import { AuthService } from '../../core/service/auth.service';
   imports: [FormsModule, RouterLink],
   templateUrl: './login.html',
 })
-export class Login {
+export class Login implements OnInit {
   email = '';
   password = '';
   loading = signal(false);
   error = signal('');
+  info = signal('');
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
+
+  ngOnInit(): void {
+    const q = this.route.snapshot.queryParamMap;
+    if (q.get('cuenta') === 'desactivada') {
+      this.error.set('Tu cuenta está desactivada. Si necesitas volver a acceder, contacta al soporte de ReadNow.');
+    }
+    if (q.get('baja') === 'ok') {
+      this.info.set(
+        'Tu solicitud fue registrada. Tu cuenta quedó desactivada; conservamos tus datos según las políticas de la plataforma. Gracias por haber usado ReadNow.'
+      );
+    }
+  }
 
   onSubmit(): void {
     this.loading.set(true);

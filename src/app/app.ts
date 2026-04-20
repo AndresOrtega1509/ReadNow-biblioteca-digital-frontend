@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { AfterViewInit, Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { AccessibilityWidget } from './shared/components/accessibility-widget/accessibility-widget';
 import { AccessibilityService } from './core/service/accessibility.service';
@@ -9,7 +9,12 @@ import { AccessibilityService } from './core/service/accessibility.service';
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App {
+export class App implements AfterViewInit {
   protected readonly title = signal('read-now-web');
-  constructor(_a11y: AccessibilityService) {}
+
+  constructor(private readonly a11y: AccessibilityService) {}
+
+  ngAfterViewInit(): void {
+    this.a11y.refresh();
+  }
 }

@@ -16,7 +16,12 @@
 
     <!-- Card -->
     <div class="bg-surface border border-border rounded-2xl p-8">
-      <!-- Error message -->
+      <!-- Info / error -->
+      @if (info()) {
+        <div class="bg-success/10 border border-success/30 rounded-lg px-4 py-3 mb-6">
+          <p class="text-success text-sm">{{ info() }}</p>
+        </div>
+      }
       @if (error()) {
         <div class="bg-danger/10 border border-danger/30 rounded-lg px-4 py-3 mb-6">
           <p class="text-danger text-sm">{{ error() }}</p>

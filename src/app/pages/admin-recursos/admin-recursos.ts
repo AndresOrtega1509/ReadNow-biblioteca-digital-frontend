@@ -1,5 +1,6 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { finalize } from 'rxjs/operators';
 import { DecimalPipe } from '@angular/common';
 import { Navbar } from '../../shared/components/navbar/navbar';
 import { SessionTimeoutModal } from '../../shared/components/session-timeout-modal/session-timeout-modal';
@@ -22,6 +23,8 @@ export class AdminRecursos implements OnInit {
   error = signal('');
   searchQuery = signal('');
   saving = signal(false);
+  recursoPendienteEliminar = signal<RecursoResponse | null>(null);
+  eliminandoRecurso = signal(false);
 
   form: RecursoRequest = {
     nombre: '', autor: '', descripcion: '', idioma: 'Español',
@@ -153,17 +156,37 @@ export class AdminRecursos implements OnInit {
     }
   }
 
-  eliminar(id: number): void {
-    if (confirm('¿Estás seguro de eliminar este recurso?')) {
-      this.recursoService.eliminarRecurso(id).subscribe({
+  abrirConfirmacionEliminar(recurso: RecursoResponse): void {
+    this.error.set('');
+    this.recursoPendienteEliminar.set(recurso);
+  }
+
+  cerrarModalEliminarRecurso(): void {
+    if (this.eliminandoRecurso()) return;
+    this.recursoPendienteEliminar.set(null);
+    this.error.set('');
+  }
+
+  confirmarEliminarRecurso(): void {
+    const r = this.recursoPendienteEliminar();
+    if (!r) return;
+    this.eliminandoRecurso.set(true);
+    this.recursoService
+      .eliminarRecurso(r.recursoId)
+      .pipe(finalize(() => this.eliminandoRecurso.set(false)))
+      .subscribe({
         next: () => {
+          this.recursoPendienteEliminar.set(null);
+          this.error.set('');
           this.mensaje.set('Recurso eliminado exitosamente');
           this.cargarRecursos();
           this.autoClearMensaje();
         },
-        error: (err) => { this.error.set(err.error?.mensaje || 'Error al eliminar'); this.autoClearMensaje(); },
+        error: (err) => {
+          this.error.set(err.error?.mensaje || 'Error al eliminar');
+          this.autoClearMensaje();
+        },
       });
-    }
   }
 
   private autoClearMensaje(): void {

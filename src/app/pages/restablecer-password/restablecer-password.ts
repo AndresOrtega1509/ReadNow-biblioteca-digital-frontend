@@ -2,6 +2,12 @@ import { Component, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/service/auth.service';
+import {
+  getMissingPasswordRequirementsMessage,
+  getPasswordChecklist,
+  isValidPassword,
+  PASSWORD_POLICY_TEXT,
+} from '../../core/utils/password-policy';
 
 @Component({
   selector: 'app-restablecer-password',
@@ -15,6 +21,7 @@ export class RestablecerPassword implements OnInit {
   loading = signal(false);
   error = signal('');
   success = signal('');
+  readonly passwordPolicyText = PASSWORD_POLICY_TEXT;
 
   constructor(
     private authService: AuthService,
@@ -33,9 +40,28 @@ export class RestablecerPassword implements OnInit {
     return this.confirmarPassword.length > 0 && this.nuevaPassword !== this.confirmarPassword;
   }
 
+  get invalidPasswordPolicy(): boolean {
+    return this.nuevaPassword.length > 0 && !isValidPassword(this.nuevaPassword);
+  }
+
+  get passwordChecklist() {
+    return getPasswordChecklist(this.nuevaPassword);
+  }
+
+  get passwordMissingMessage(): string | null {
+    return getMissingPasswordRequirementsMessage(this.nuevaPassword);
+  }
+
   onSubmit(): void {
     if (this.nuevaPassword !== this.confirmarPassword) {
       this.error.set('Las contraseñas no coinciden');
+      return;
+    }
+
+    if (!isValidPassword(this.nuevaPassword)) {
+      this.error.set(
+        getMissingPasswordRequirementsMessage(this.nuevaPassword) ?? this.passwordPolicyText,
+      );
       return;
     }
 

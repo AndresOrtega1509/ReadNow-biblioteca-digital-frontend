@@ -2,7 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { UsuarioResponse, ActualizarPerfilRequest, CambiarPasswordRequest, MensajeResponse } from '../models/interfaces';
+import {
+  UsuarioResponse,
+  ActualizarPerfilRequest,
+  CambiarPasswordRequest,
+  MensajeResponse,
+  SolicitudBajaPlataformaRequest,
+} from '../models/interfaces';
 
 @Injectable({ providedIn: 'root' })
 export class UsuarioService {
@@ -46,5 +52,10 @@ export class UsuarioService {
 
   registrarActividad(): Observable<any> {
     return this.http.post(`${this.apiUrl}/sesion/actividad`, {});
+  }
+
+  /** Solicitud de baja: desactiva la cuenta en el servidor sin eliminar datos. */
+  solicitarBajaPlataforma(request: SolicitudBajaPlataformaRequest): Observable<MensajeResponse> {
+    return this.http.post<MensajeResponse>(`${this.apiUrl}/cuenta/solicitud-baja`, request);
   }
 }

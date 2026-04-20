@@ -1,9 +1,11 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { UsuarioResponse } from '../../../core/models/interfaces';
 import { AuthService } from '../../../core/service/auth.service';
+import { UsuarioService } from '../../../core/service/usuario.service';
 
 @Component({
   selector: 'app-navbar',
@@ -12,6 +14,48 @@ import { AuthService } from '../../../core/service/auth.service';
   standalone: true
 })
 export class Navbar implements OnInit, OnDestroy {
+  protected readonly authService = inject(AuthService);
+  private readonly usuarioService = inject(UsuarioService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+
+  /** Perfil del API; se limpia al cerrar sesión. */
+  readonly perfil = signal<UsuarioResponse | null>(null);
+
+  readonly navDisplayName = computed(() => {
+    const p = this.perfil();
+    if (p) {
+      const full = `${p.nombre ?? ''} ${p.apellido ?? ''}`.trim();
+      if (full) return full;
+    }
+    return this.authService.userUsername() || this.authService.userName() || 'Usuario';
+  });
+
+  /** Catálogo / asistente: mismo criterio que puedeAccederAlCatalogo en backend. */
+  readonly puedeVerAsistente = computed(() => {
+    if (this.authService.isAdmin()) {
+      return true;
+    }
+    const p = this.perfil();
+    return p !== null && p.suscripcionActiva === true;
+  });
+
+  /** Misma idea que perfil.etiquetaTipoSuscripcion; admins ven rol. */
+  readonly navPlanEtiqueta = computed(() => {
+    if (this.authService.isAdmin()) {
+      return 'Administrador';
+    }
+    const p = this.perfil();
+    if (p === null) {
+      return '';
+    }
+    if (!p.suscripcionActiva) {
+      return 'Suscripción expirada';
+    }
+    const n = p.nombrePlanSuscripcion?.trim();
+    return n || 'Suscripción activa';
+  });
+
   showUserMenu = false;
   showMobileMenu = false;
   showSearchBar = false;
@@ -20,11 +64,20 @@ export class Navbar implements OnInit, OnDestroy {
   private searchInput$ = new Subject<string>();
   private sub?: Subscription;
 
-  constructor(
-    protected authService: AuthService,
-    private router: Router,
-    private route: ActivatedRoute
-  ) {}
+  constructor() {
+    effect((onCleanup) => {
+      const id = this.authService.getUserId();
+      if (id == null) {
+        this.perfil.set(null);
+        return;
+      }
+      const sub = this.usuarioService.obtenerPerfil().subscribe({
+        next: (u) => this.perfil.set(u),
+        error: () => this.perfil.set(null)
+      });
+      onCleanup(() => sub.unsubscribe());
+    });
+  }
 
   ngOnInit(): void {
     this.sub = this.searchInput$.pipe(

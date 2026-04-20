@@ -5,7 +5,7 @@ import { of } from 'rxjs';
 import { UsuarioService } from '../service/usuario.service';
 import { SuscripcionRedirectService } from '../service/suscripcion-redirect.service';
 
-/** Bloquea el acceso al catálogo si la suscripción está vencida. Redirige a perfil (URL limpia). */
+/** Bloquea el acceso al catálogo si la suscripción está vencida. Redirige al paywall de planes. */
 export const suscripcionGuard: CanActivateFn = () => {
   const usuarioService = inject(UsuarioService);
   const router = inject(Router);
@@ -15,12 +15,12 @@ export const suscripcionGuard: CanActivateFn = () => {
     map((puede) => {
       if (puede) return true;
       suscripcionRedirect.marcarRedirectPorVencida();
-      router.navigate(['/perfil']);
+      router.navigate(['/suscripcion/planes']);
       return false;
     }),
     catchError(() => {
       suscripcionRedirect.marcarRedirectPorVencida();
-      router.navigate(['/perfil']);
+      router.navigate(['/suscripcion/planes']);
       return of(false);
     })
   );

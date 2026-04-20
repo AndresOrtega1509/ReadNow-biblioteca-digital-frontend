@@ -2,6 +2,12 @@ import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/service/auth.service';
+import {
+  getMissingPasswordRequirementsMessage,
+  getPasswordChecklist,
+  isValidPassword,
+  PASSWORD_POLICY_TEXT,
+} from '../../core/utils/password-policy';
 
 @Component({
   selector: 'app-registro',
@@ -20,11 +26,24 @@ export class Registro {
   error = signal('');
   success = signal('');
   aceptaDatos: boolean = false;
+  readonly passwordPolicyText = PASSWORD_POLICY_TEXT;
 
   constructor(private authService: AuthService, private router: Router) {}
 
   get passwordsMismatch(): boolean {
     return this.confirmarPassword.length > 0 && this.password !== this.confirmarPassword;
+  }
+
+  get invalidPasswordPolicy(): boolean {
+    return this.password.length > 0 && !isValidPassword(this.password);
+  }
+
+  get passwordChecklist() {
+    return getPasswordChecklist(this.password);
+  }
+
+  get passwordMissingMessage(): string | null {
+    return getMissingPasswordRequirementsMessage(this.password);
   }
 
   onSubmit(): void {
@@ -36,6 +55,13 @@ export class Registro {
 
     if (this.password !== this.confirmarPassword) {
       this.error.set('Las contraseñas no coinciden');
+      return;
+    }
+
+    if (!isValidPassword(this.password)) {
+      this.error.set(
+        getMissingPasswordRequirementsMessage(this.password) ?? this.passwordPolicyText,
+      );
       return;
     }
 

@@ -1,5 +1,6 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { finalize } from 'rxjs/operators';
 import { Navbar } from '../../shared/components/navbar/navbar';
 import { SessionTimeoutModal } from '../../shared/components/session-timeout-modal/session-timeout-modal';
 import { CategoriaService } from '../../core/service/categoria.service';
@@ -28,6 +29,8 @@ export class AdminCategorias implements OnInit {
   mensaje = signal('');
   error = signal('');
   saving = signal(false);
+  categoriaPendienteEliminar = signal<CategoriaRecursoResponse | null>(null);
+  eliminandoCategoria = signal(false);
 
   form: CategoriaRecursoRequest = { nombre: '' };
 
@@ -95,16 +98,37 @@ export class AdminCategorias implements OnInit {
     }
   }
 
-  eliminar(c: CategoriaRecursoResponse): void {
-    if (!confirm('¿Eliminar la categoría "' + c.nombre + '"? Los recursos que la usen quedarán sin categoría.')) return;
-    this.categoriaService.eliminar(c.categoriaRecursoId).subscribe({
-      next: () => {
-        this.mensaje.set('Categoría eliminada correctamente');
-        this.cargarCategorias();
-        this.autoClearMensaje();
-      },
-      error: (err) => { this.error.set(err.error?.mensaje || 'Error al eliminar'); this.autoClearMensaje(); },
-    });
+  abrirConfirmacionEliminar(c: CategoriaRecursoResponse): void {
+    this.error.set('');
+    this.categoriaPendienteEliminar.set(c);
+  }
+
+  cerrarModalEliminarCategoria(): void {
+    if (this.eliminandoCategoria()) return;
+    this.categoriaPendienteEliminar.set(null);
+    this.error.set('');
+  }
+
+  confirmarEliminarCategoria(): void {
+    const c = this.categoriaPendienteEliminar();
+    if (!c) return;
+    this.eliminandoCategoria.set(true);
+    this.categoriaService
+      .eliminar(c.categoriaRecursoId)
+      .pipe(finalize(() => this.eliminandoCategoria.set(false)))
+      .subscribe({
+        next: () => {
+          this.categoriaPendienteEliminar.set(null);
+          this.error.set('');
+          this.mensaje.set('Categoría eliminada correctamente');
+          this.cargarCategorias();
+          this.autoClearMensaje();
+        },
+        error: (err) => {
+          this.error.set(err.error?.mensaje || 'Error al eliminar');
+          this.autoClearMensaje();
+        },
+      });
   }
 
   private autoClearMensaje(): void {

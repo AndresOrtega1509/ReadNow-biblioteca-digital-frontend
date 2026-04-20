@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, signal } from '@angular/core';
+import { finalize } from 'rxjs/operators';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DatePipe, DecimalPipe } from '@angular/common';
@@ -40,6 +41,9 @@ export class RecursoDetalle implements OnInit, OnDestroy {
   nuevaResenia = '';
   mensaje = signal('');
   mensajeTipo = signal<'success' | 'error' | ''>('');
+  /** Confirmación in-app (solo admin) antes de borrar una reseña. */
+  reseniaPendienteEliminar = signal<ReseniaResponse | null>(null);
+  eliminandoResenia = signal(false);
 
   private recursoId = 0;
 
@@ -141,6 +145,33 @@ export class RecursoDetalle implements OnInit, OnDestroy {
       },
       error: () => this.mostrarMensaje('Error al publicar reseña', 'error'),
     });
+  }
+
+  eliminarReseniaAdmin(resenia: ReseniaResponse): void {
+    if (!this.authService.isAdmin()) return;
+    this.reseniaPendienteEliminar.set(resenia);
+  }
+
+  cerrarModalEliminarResenia(): void {
+    if (this.eliminandoResenia()) return;
+    this.reseniaPendienteEliminar.set(null);
+  }
+
+  confirmarEliminarResenia(): void {
+    const resenia = this.reseniaPendienteEliminar();
+    if (!resenia || !this.authService.isAdmin()) return;
+    this.eliminandoResenia.set(true);
+    this.reseniaService
+      .eliminarComoAdmin(resenia.reseniaId)
+      .pipe(finalize(() => this.eliminandoResenia.set(false)))
+      .subscribe({
+        next: () => {
+          this.reseniaPendienteEliminar.set(null);
+          this.mostrarMensaje('Reseña eliminada', 'success');
+          this.cargarResenias();
+        },
+        error: () => this.mostrarMensaje('No se pudo eliminar la reseña', 'error'),
+      });
   }
 
   agregarFavorito(): void {

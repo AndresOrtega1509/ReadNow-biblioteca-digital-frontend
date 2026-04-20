@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { Navbar } from '../../shared/components/navbar/navbar';
 import { Footer } from '../../shared/components/footer/footer';
 import { SessionTimeoutModal } from '../../shared/components/session-timeout-modal/session-timeout-modal';
@@ -9,10 +10,16 @@ import { AuthService } from '../../core/service/auth.service';
 import { SessionService } from '../../core/service/session.service';
 import { SuscripcionRedirectService } from '../../core/service/suscripcion-redirect.service';
 import { UsuarioResponse, ActualizarPerfilRequest, CambiarPasswordRequest } from '../../core/models/interfaces';
+import {
+  getMissingPasswordRequirementsMessage,
+  getPasswordChecklist,
+  isValidPassword,
+  PASSWORD_POLICY_TEXT,
+} from '../../core/utils/password-policy';
 
 @Component({
   selector: 'app-perfil',
-  imports: [DatePipe, FormsModule, Navbar, Footer, SessionTimeoutModal],
+  imports: [DatePipe, FormsModule, RouterLink, Navbar, Footer, SessionTimeoutModal],
   templateUrl: './perfil.html',
 })
 export class Perfil implements OnInit, OnDestroy {
@@ -27,10 +34,17 @@ export class Perfil implements OnInit, OnDestroy {
   savingPassword = signal(false);
   passwordError = signal('');
   passwordSuccess = signal('');
+  readonly passwordPolicyText = PASSWORD_POLICY_TEXT;
   passwordForm: CambiarPasswordRequest = { contrasenaActual: '', nuevaPassword: '', confirmarPassword: '' };
 
   prueba2MinLoading = signal(false);
   twoFactorLoading = signal(false);
+
+  showBajaModal = signal(false);
+  motivoBaja = '';
+  bajaEntendido = signal(false);
+  savingBaja = signal(false);
+  bajaError = signal('');
 
   /** Segundos restantes cuando < 1 min (countdown). null = no en modo countdown. */
   segundosRestantes = signal<number | null>(null);
@@ -108,9 +122,48 @@ export class Perfil implements OnInit, OnDestroy {
       next: (data) => {
         this.usuario.set(data);
         this.loading.set(false);
+        if (data.suscripcionActiva || data.rol === 'ADMIN') {
+          this.mostrarSuscripcionVencida.set(false);
+        }
         this.iniciarCountdownSiCorresponde();
       },
       error: () => this.loading.set(false),
+    });
+  }
+
+  abrirBajaModal(): void {
+    this.motivoBaja = '';
+    this.bajaEntendido.set(false);
+    this.bajaError.set('');
+    this.showBajaModal.set(true);
+  }
+
+  cerrarBajaModal(): void {
+    this.showBajaModal.set(false);
+    this.bajaError.set('');
+  }
+
+  confirmarBajaPlataforma(): void {
+    if (!this.bajaEntendido()) {
+      this.bajaError.set('Debes confirmar que entiendes las consecuencias de la baja.');
+      return;
+    }
+    this.savingBaja.set(true);
+    this.bajaError.set('');
+    const motivo = this.motivoBaja.trim();
+    this.usuarioService.solicitarBajaPlataforma(motivo ? { motivo } : {}).subscribe({
+      next: (res) => {
+        this.savingBaja.set(false);
+        if (res.exitoso) {
+          this.authService.afterBajaPlataforma();
+        } else {
+          this.bajaError.set(res.mensaje || 'No se pudo registrar la solicitud');
+        }
+      },
+      error: (err) => {
+        this.savingBaja.set(false);
+        this.bajaError.set(err.error?.mensaje || 'Error al procesar la solicitud');
+      },
     });
   }
 
@@ -133,6 +186,25 @@ export class Perfil implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Días naturales desde hoy (00:00 local) hasta el día de vencimiento (00:00 local del día de fin).
+   */
+  private diasRestantesCalendario(fin: Date): number {
+    const finD = new Date(fin.getFullYear(), fin.getMonth(), fin.getDate());
+    const ahora = new Date();
+    const hoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+    return Math.max(0, Math.round((finD.getTime() - hoy.getTime()) / 86_400_000));
+  }
+
+  /** Texto del tipo de acceso activo (plan o prueba). */
+  etiquetaTipoSuscripcion(): string {
+    if (!this.suscripcionActivaEfectiva()) {
+      return 'Suscripción expirada';
+    }
+    const n = this.usuario()?.nombrePlanSuscripcion?.trim();
+    return n || 'Suscripción activa';
+  }
+
   getSuscripcionRestante(): string {
     if (this.suscripcionExpiradaEnCliente()) return '';
     const seg = this.segundosRestantes();
@@ -146,15 +218,20 @@ export class Perfil implements OnInit, OnDestroy {
       if (diffMs <= 0) return '';
       const minutos = Math.floor(diffMs / (1000 * 60));
       const horas = Math.floor(minutos / 60);
-      const dias = Math.floor(horas / 24);
       if (minutos < 60) return `${minutos} minuto${minutos !== 1 ? 's' : ''} restante${minutos !== 1 ? 's' : ''}`;
       if (horas < 24) return `${horas} hora${horas !== 1 ? 's' : ''} restante${horas !== 1 ? 's' : ''}`;
+      const dias = this.diasRestantesCalendario(fin);
       return `${dias} día${dias !== 1 ? 's' : ''} restante${dias !== 1 ? 's' : ''}`;
     }
     if (!user.finSuscripcion) return '';
     const fin = new Date(user.finSuscripcion);
-    const diff = fin.getTime() - ahora.getTime();
-    const dias = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+    const diffMs = fin.getTime() - ahora.getTime();
+    if (diffMs <= 0) return '';
+    const minutos = Math.floor(diffMs / (1000 * 60));
+    const horas = Math.floor(minutos / 60);
+    if (minutos < 60) return `${minutos} minuto${minutos !== 1 ? 's' : ''} restante${minutos !== 1 ? 's' : ''}`;
+    if (horas < 24) return `${horas} hora${horas !== 1 ? 's' : ''} restante${horas !== 1 ? 's' : ''}`;
+    const dias = this.diasRestantesCalendario(fin);
     return `${dias} día${dias !== 1 ? 's' : ''} restante${dias !== 1 ? 's' : ''}`;
   }
 
@@ -220,6 +297,18 @@ export class Perfil implements OnInit, OnDestroy {
     });
   }
 
+  get invalidNewPasswordPolicy(): boolean {
+    return !!this.passwordForm.nuevaPassword && !isValidPassword(this.passwordForm.nuevaPassword);
+  }
+
+  get passwordChecklist() {
+    return getPasswordChecklist(this.passwordForm.nuevaPassword || '');
+  }
+
+  get newPasswordMissingMessage(): string | null {
+    return getMissingPasswordRequirementsMessage(this.passwordForm.nuevaPassword || '');
+  }
+
   guardarPassword(): void {
     const { contrasenaActual, nuevaPassword, confirmarPassword } = this.passwordForm;
     if (!contrasenaActual?.trim()) {
@@ -230,8 +319,10 @@ export class Perfil implements OnInit, OnDestroy {
       this.passwordError.set('La nueva contraseña es obligatoria');
       return;
     }
-    if (nuevaPassword.length < 6) {
-      this.passwordError.set('La nueva contraseña debe tener al menos 6 caracteres');
+    if (!isValidPassword(nuevaPassword)) {
+      this.passwordError.set(
+        getMissingPasswordRequirementsMessage(nuevaPassword) ?? this.passwordPolicyText,
+      );
       return;
     }
     if (nuevaPassword !== confirmarPassword) {

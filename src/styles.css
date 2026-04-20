@@ -68,3 +68,139 @@ a.btn-app:hover,
 a[class*="bg-primary"]:hover {
   color: #ffffff !important;
 }
+
+/* =============================================================================
+   Accesibilidad: contrastes y modos de lectura (clases que pone AccessibilityService en body)
+   Las utilidades Tailwind usan --color-* del @theme; las sobrescribimos aquí.
+   ============================================================================= */
+
+/* Valores por defecto del tema (al elegir “normal” o restablecer) */
+body.a11y-contrast-normal {
+  --color-bg: #0f0f17;
+  --color-surface: #1a1a2e;
+  --color-surface-light: #232340;
+  --color-primary: #e21143;
+  --color-primary-hover: #ff1a53;
+  --color-secondary: #6c5ce7;
+  --color-accent: #ffd32a;
+  --color-text: #ffffff;
+  --color-text-secondary: #8b8b9e;
+  --color-border: #2a2a3e;
+  --color-success: #00b894;
+  --color-danger: #ff4757;
+}
+
+/* Contraste oscuro: fondo casi negro y texto muy claro (app ya es oscura; esto refuerza) */
+body.a11y-contrast-dark {
+  --color-bg: #000000;
+  --color-surface: #0d0d12;
+  --color-surface-light: #16161f;
+  --color-primary: #ff4d6d;
+  --color-primary-hover: #ff6b88;
+  --color-secondary: #a29bfe;
+  --color-accent: #ffe066;
+  --color-text: #ffffff;
+  --color-text-secondary: #e8e8ef;
+  --color-border: #3d3d52;
+  --color-success: #55efc4;
+  --color-danger: #ff6b7a;
+}
+
+/* Contraste de luz: tema claro */
+body.a11y-contrast-light {
+  --color-bg: #f0f2f8;
+  --color-surface: #ffffff;
+  --color-surface-light: #e8eaf2;
+  --color-primary: #c40e3a;
+  --color-primary-hover: #a00c2f;
+  --color-secondary: #5b4fcf;
+  --color-accent: #c9a227;
+  --color-text: #12121a;
+  --color-text-secondary: #4a4a5c;
+  --color-border: #c5c8d6;
+  --color-success: #008266;
+  --color-danger: #c62828;
+}
+
+body.a11y-contrast-light a {
+  color: var(--color-primary);
+}
+
+body.a11y-contrast-light a.btn-app,
+body.a11y-contrast-light a[class*="bg-primary"] {
+  color: #ffffff !important;
+}
+
+/* Alto contraste */
+body.a11y-contrast-high {
+  --color-bg: #000000;
+  --color-surface: #000000;
+  --color-surface-light: #1a1a1a;
+  --color-primary: #ffff00;
+  --color-primary-hover: #ffff66;
+  --color-secondary: #00ffff;
+  --color-accent: #ffff00;
+  --color-text: #ffffff;
+  --color-text-secondary: #ffffff;
+  --color-border: #ffffff;
+  --color-success: #00ff00;
+  --color-danger: #ff6666;
+}
+
+body.a11y-contrast-high a {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+body.a11y-contrast-high a.btn-app,
+body.a11y-contrast-high a[class*="bg-primary"] {
+  color: #000000 !important;
+  background-color: var(--color-primary) !important;
+}
+
+/* Monocromo: escala de grises en variables; el filtro en #a11y-filter-root añade grayscale al contenido */
+body.a11y-contrast-mono {
+  --color-bg: #121212;
+  --color-surface: #1e1e1e;
+  --color-surface-light: #2a2a2a;
+  --color-primary: #c0c0c0;
+  --color-primary-hover: #e0e0e0;
+  --color-secondary: #9e9e9e;
+  --color-accent: #d0d0d0;
+  --color-text: #f5f5f5;
+  --color-text-secondary: #b0b0b0;
+  --color-border: #505050;
+  --color-success: #a8a8a8;
+  --color-danger: #d0d0d0;
+}
+
+/* Modo dislexia: solo contenido principal (el widget queda fuera de #a11y-filter-root) */
+body.a11y-dyslexia #a11y-filter-root,
+body.a11y-dyslexia #a11y-filter-root * {
+  font-family: 'Lexend', 'Segoe UI', system-ui, sans-serif !important;
+  letter-spacing: 0.04em !important;
+  word-spacing: 0.1em !important;
+}
+
+body.a11y-dyslexia #a11y-filter-root {
+  line-height: 1.65 !important;
+}
+
+body.a11y-dyslexia #a11y-filter-root p,
+body.a11y-dyslexia #a11y-filter-root li {
+  line-height: 1.75 !important;
+}
+
+/* Resaltar enlaces en la app (no en el panel del widget, que está fuera del root) */
+body.a11y-links #a11y-filter-root a {
+  text-decoration: underline !important;
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 2px;
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+body.a11y-links #a11y-filter-root a:hover {
+  outline-color: var(--color-primary-hover);
+}

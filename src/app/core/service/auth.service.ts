@@ -67,11 +67,27 @@ export class AuthService {
     return this.http.put<MensajeResponse>(`${this.apiUrl}/restablecer`, request);
   }
 
-  logout(): void {
+  private clearSession(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     this.currentUser.set(null);
+  }
+
+  logout(): void {
+    this.clearSession();
     this.router.navigate(['/']);
+  }
+
+  /** Tras solicitar baja en perfil: cierra sesión y muestra mensaje en login. */
+  afterBajaPlataforma(): void {
+    this.clearSession();
+    this.router.navigate(['/login'], { queryParams: { baja: 'ok' } });
+  }
+
+  /** Token inválido por cuenta desactivada (p. ej. respuesta 403 del API). */
+  logoutCuentaDesactivada(): void {
+    this.clearSession();
+    this.router.navigate(['/login'], { queryParams: { cuenta: 'desactivada' } });
   }
 
   getToken(): string | null {

@@ -1,5 +1,6 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { finalize } from 'rxjs/operators';
 import { Navbar } from '../../shared/components/navbar/navbar';
 import { SessionTimeoutModal } from '../../shared/components/session-timeout-modal/session-timeout-modal';
 import { TipoRecursoService } from '../../core/service/tipo-recurso.service';
@@ -28,6 +29,8 @@ export class AdminTiposRecurso implements OnInit {
   mensaje = signal('');
   error = signal('');
   saving = signal(false);
+  tipoPendienteEliminar = signal<TipoRecursoResponse | null>(null);
+  eliminandoTipo = signal(false);
 
   form: TipoRecursoRequest = { nombre: '' };
 
@@ -99,16 +102,37 @@ export class AdminTiposRecurso implements OnInit {
     }
   }
 
-  eliminar(t: TipoRecursoResponse): void {
-    if (!confirm('¿Eliminar el tipo "' + t.nombre + '"? Los recursos que lo usen quedarán sin tipo.')) return;
-    this.tipoRecursoService.eliminar(t.tipoRecursoId).subscribe({
-      next: () => {
-        this.mensaje.set('Tipo de recurso eliminado correctamente');
-        this.cargarTipos();
-        this.autoClearMensaje();
-      },
-      error: (err) => { this.error.set(err.error?.mensaje || 'Error al eliminar'); this.autoClearMensaje(); },
-    });
+  abrirConfirmacionEliminar(t: TipoRecursoResponse): void {
+    this.error.set('');
+    this.tipoPendienteEliminar.set(t);
+  }
+
+  cerrarModalEliminarTipo(): void {
+    if (this.eliminandoTipo()) return;
+    this.tipoPendienteEliminar.set(null);
+    this.error.set('');
+  }
+
+  confirmarEliminarTipo(): void {
+    const t = this.tipoPendienteEliminar();
+    if (!t) return;
+    this.eliminandoTipo.set(true);
+    this.tipoRecursoService
+      .eliminar(t.tipoRecursoId)
+      .pipe(finalize(() => this.eliminandoTipo.set(false)))
+      .subscribe({
+        next: () => {
+          this.tipoPendienteEliminar.set(null);
+          this.error.set('');
+          this.mensaje.set('Tipo de recurso eliminado correctamente');
+          this.cargarTipos();
+          this.autoClearMensaje();
+        },
+        error: (err) => {
+          this.error.set(err.error?.mensaje || 'Error al eliminar');
+          this.autoClearMensaje();
+        },
+      });
   }
 
   private autoClearMensaje(): void {

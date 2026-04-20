@@ -24,6 +24,14 @@ export class AccessibilityService {
     this.applyAll();
   }
 
+  /**
+   * Vuelve a aplicar estilos cuando ya existe el DOM (p. ej. {@code #a11y-filter-root}).
+   * El constructor puede correr antes del primer render de Angular.
+   */
+  refresh(): void {
+    this.applyAll();
+  }
+
   // ---- carga desde localStorage ----
   private load(): void {
     const c = localStorage.getItem(STORAGE.CONTRAST) as ContrastMode | null;
